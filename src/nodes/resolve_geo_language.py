@@ -1,4 +1,4 @@
-"""resolve_geo_language — deterministic geo/language assignment for every channel.
+"""resolve_geo_language: deterministic geo/language assignment for every channel.
 
 Reads the self-reported fields from hydrate_metadata (country_code from YouTube
 snippet.country, primary_language_code from snippet.defaultLanguage). Falls back

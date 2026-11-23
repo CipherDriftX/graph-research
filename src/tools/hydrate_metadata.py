@@ -1,4 +1,4 @@
-"""hydrate_metadata — L2 metadata hydration node.
+"""hydrate_metadata: L2 metadata hydration node.
 
 Batches channel IDs into groups of 50 for the YouTube Data API v3
 (1 quota unit per batch), fetches videos per channel, computes outlier
@@ -367,8 +367,8 @@ def hydrate_metadata(state: dict) -> dict:
             stopped_on_deadline = True
             break
         ch["discovery_method"] = _attribute(ch["channel_id"], kw_found, gw_found)
-        # v4 competitor_ecosystem: channels resolved from competitor-benchmark
-        # seeds get a distinct label (plan §10 item 3)
+        # competitor_ecosystem: channels resolved from competitor-benchmark
+        # seeds get a distinct label
         active_node = state.get("tree", {}).get(state.get("active_node_id") or "", {})
         competitor_seeds = set(active_node.get("_competitor_seeds") or [])
         if ch["channel_id"] in gw_found and ch["channel_id"] in competitor_seeds:
@@ -493,7 +493,7 @@ def hydrate_metadata(state: dict) -> dict:
                             vid = dict(vid)
                             vid["extra"] = _json.dumps({"thumbnails": vid["thumbnails"]})
                         persist_video(conn, vid)
-                    # v3: snapshot + enrichment provenance
+                    # snapshot + enrichment provenance
                     run_id = state.get("run_id", "")
                     # 4 quota units for the long/Shorts/live split, plus a few
                     # more for the Shorts ID set that settles is_short — but
@@ -564,10 +564,10 @@ def hydrate_metadata(state: dict) -> dict:
                         v3_fields["country_source"] = "self_reported"
                     if ch.get("default_language"):
                         v3_fields["primary_language_code"] = ch["default_language"]
-                    # v4: channel age information
+                    # channel age information
                     if ch.get("published_at"):
                         v3_fields["channel_creation_date"] = ch["published_at"]
-                    # v4: vertical_start_date — earliest video matching this niche's keywords
+                    # vertical_start_date — earliest video matching this niche's keywords
                     _derive_vertical_start(ch, conn, v3_fields)
                     persist_channel_v3(conn, ch["channel_id"], run_id, v3_fields)
                     for vid in ch.get("_videos", []):
@@ -611,7 +611,7 @@ def hydrate_metadata(state: dict) -> dict:
                             v3_vid["language_code"] = vid["default_language"]
                         if v3_vid:
                             persist_video_v3(conn, vid["video_id"], v3_vid)
-                    # v4 sample_reason: latest 50 by date, top 20 lifetime by outlier
+                    # sample_reason: latest 50 by date, top 20 lifetime by outlier
                     _tag_video_samples(conn, ch.get("_videos", []))
                 except Exception as exc:
                     # Roll back this channel's partial work so the connection

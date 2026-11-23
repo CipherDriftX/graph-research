@@ -11,9 +11,8 @@ from typing import Any
 
 
 
-# Bucket edges and labels come straight from the client brief (finance §7).
-# The en dashes are theirs and are what the workbook column shows, so they
-# are not incidental formatting.
+# Bucket edges and labels match the workbook column exactly, en dashes
+# included, so they are not incidental formatting.
 _SIZE_BUCKETS: tuple[tuple[int, str], ...] = (
     (10_000, "<10K"),
     (50_000, "10K–50K"),
@@ -279,7 +278,7 @@ def score_signals(state: dict) -> dict:
                     persist_channel_signals(conn, ch_id, signals)
                     scored += 1
 
-                    # v3: evergreen, engagement, floor, news
+                    # evergreen, engagement, floor, news
                     run_id = state.get("run_id", "")
                     v3_fields: dict[str, Any] = {}
                     v3_vid_updates: dict[str, dict] = {}
@@ -356,9 +355,9 @@ def score_signals(state: dict) -> dict:
                     v3_fields["meets_subscriber_floor"] = meets
                     if reason:
                         v3_fields["floor_override_reason"] = reason
-                    # v4: channel_size_bucket (brief §7)
+                    # channel_size_bucket
                     v3_fields["channel_size_bucket"] = channel_size_bucket(ch_subs)
-                    # v4: upload_frequency
+                    # upload_frequency
                     uploads_per_week = signals.get("cadence", 0) / 30 * 7 if signals.get("cadence") else 0
                     v3_fields["upload_frequency"] = upload_frequency_band(uploads_per_week)
 

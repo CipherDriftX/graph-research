@@ -1,4 +1,4 @@
-"""breakout_scanner — video-first breakout discovery (v4, plan §10).
+"""breakout_scanner: video-first breakout discovery.
 
 Uses Bright Data's keyword channel discovery to sample recent videos in a
 niche's keyword space and flag channels with views far above what their

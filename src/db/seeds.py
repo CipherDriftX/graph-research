@@ -1,4 +1,4 @@
-"""v3 taxonomy seeds — metadata-tier only per plan §7.1.
+"""Taxonomy seeds.
 
 Called once by ensure_schema after migrations so the factor and niche
 taxonomies are never empty when enrichment nodes try to match against them.
@@ -193,7 +193,7 @@ NICHE_SEEDS: list[dict[str, str]] = [
     {"name": "music_production_tutorial", "cat": "music", "desc": "Music production tutorials, DAW workflows, and sound design", "evergreen": True},
     {"name": "film_analysis_cinematography", "cat": "entertainment", "desc": "Film analysis, cinematography breakdowns, and directorial deep-dives", "evergreen": True},
 
-    # --- v4 expanded Finance niches (brief §2) ---
+    # --- expanded Finance niches ---
     {"name": "bonds", "cat": "finance", "desc": "Government and corporate bonds, fixed income, yield analysis", "evergreen": False},
     {"name": "currencies_forex", "cat": "finance", "desc": "Currency trading, forex market analysis, exchange rate strategy", "evergreen": False},
     {"name": "etf_passive_investing", "cat": "finance", "desc": "ETF investing, passive index strategies, fund comparison", "evergreen": True},
@@ -233,7 +233,7 @@ NICHE_SEEDS: list[dict[str, str]] = [
     {"name": "company_breakdowns", "cat": "finance", "desc": "Company deep-dives, business model analysis, corporate strategy breakdowns", "evergreen": True},
     {"name": "consumer_economics", "cat": "finance", "desc": "Consumer economics — inflation impact, purchasing power, household finance at macro scale", "evergreen": False},
 
-    # --- v4 expanded crime niches ---
+    # --- expanded crime niches ---
     {"name": "police_investigation_documentary", "cat": "crime", "desc": "Long-form police investigation documentary, detective work, case breakdowns", "evergreen": True},
     {"name": "interrogation_criminal_psychology", "cat": "crime", "desc": "Interrogation analysis, criminal psychology, suspect interview breakdowns", "evergreen": True},
     {"name": "cold_case_unsolved", "cat": "crime", "desc": "Cold case investigations, unsolved mysteries, dormant case re-examinations", "evergreen": True},
@@ -273,7 +273,7 @@ def seed_taxonomies(conn) -> int:
             if cur.rowcount:
                 inserted += 1
         conn.commit()
-        # v4: seed primary_niche_groups and cohort_definitions
+        # seed primary_niche_groups and cohort_definitions
         for g in V4_PRIMARY_NICHE_GROUPS:
             cur.execute(
                 """INSERT INTO primary_niche_groups (vertical, group_label, description)
@@ -312,7 +312,7 @@ def seed_taxonomies(conn) -> int:
     return inserted
 
 
-# === v4 seed data (plan §5.1, §5.4, §5.10) ===
+# === seed data ===
 
 V4_PRIMARY_NICHE_GROUPS: list[dict[str, str]] = [
     # Crime — 5 primary niche groups matching the brief's named categories
@@ -373,7 +373,7 @@ V4_NICHE_ADJACENCY: list[dict[str, str]] = [
      "type": "format_shared",
      "rationale": "Different asset class but similar explainer/tutorial format — lower prior than the investing bridge"},
 
-    # --- v4 expanded Finance adjacency (brief §2 missing niches) ---
+    # --- expanded Finance adjacency ---
     {"vertical": "finance", "a": "investing_stock_market", "b": "etf_passive_investing",
      "type": "parent_child",
      "rationale": "ETF investing is the most common entry point from general stock-market content"},

@@ -1,4 +1,4 @@
-"""check_saturation — the real stop condition.
+"""check_saturation: the real stop condition.
 
 Three-way routing:
 - "expand_deeper" — novelty above threshold, continue

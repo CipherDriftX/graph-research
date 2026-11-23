@@ -1,4 +1,4 @@
-"""build_taxonomy — L0 taxonomy designer node.
+"""build_taxonomy: L0 taxonomy designer node.
 
 Frontier-tier LLM call scoped to niche name + scanner evidence only.
 Produces the initial taxonomy tree with root + first-pass branches.
@@ -101,7 +101,7 @@ def _parse_tree_json(raw: str, niche_name: str) -> dict[str, dict]:
             status="pending",
         )
         tree[node_id] = node.model_dump()
-    # v2: depth-1 branches root their own budget lineage. The root itself has
+    # depth-1 branches root their own budget lineage. The root itself has
     # no lineage (None).
     for node in tree.values():
         if node.get("depth") == 1 and not node.get("lineage_root_id"):
@@ -110,7 +110,7 @@ def _parse_tree_json(raw: str, niche_name: str) -> dict[str, dict]:
 
 
 async def build_taxonomy(state: dict) -> dict:
-    # v4: read from the multi-niche queue if available, fallback to singular
+    # read from the multi-niche queue if available, fallback to singular
     nidx = state.get("niche_index", 0)
     niches = state.get("selected_niches") or []
     niche_name = niches[nidx] if nidx < len(niches) and niches else state.get("selected_niche", "unknown")

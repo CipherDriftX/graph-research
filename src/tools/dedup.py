@@ -251,11 +251,11 @@ def persist_category_tags(
 
 
 # ---------------------------------------------------------------------------
-# v3 dataset-first enrichment upserts
+# dataset-first enrichment upserts
 # ---------------------------------------------------------------------------
 
 def persist_channel_v3(conn: Any, channel_id: str, run_id: str, fields: dict) -> None:
-    """Update v3 enrichment columns for a channel that already exists.
+    """Update the enrichment columns for a channel that already exists.
 
     Every real caller (hydrate_metadata, resolve_geo_language,
     classify_channel, extract_success_failure_factors) only ever enriches a
@@ -385,7 +385,7 @@ def persist_channel_snapshot(conn: Any, channel_id: str, run_id: str,
 
 
 def persist_video_v3(conn: Any, video_id: str, fields: dict) -> None:
-    """Update v3 enrichment columns for a video that already exists.
+    """Update the enrichment columns for a video that already exists.
 
     Same reasoning as persist_channel_v3: every real caller enriches a row
     persist_video() already created, so this is a plain UPDATE rather than
@@ -461,7 +461,7 @@ def persist_channel_niche_membership(conn: Any, channel_id: str, niche_id: int,
         cur.close()
 
 # ---------------------------------------------------------------------------
-# v4 controlled-vocabulary fuzzy matching (plan §6.5)
+# controlled-vocabulary fuzzy matching
 # ---------------------------------------------------------------------------
 
 def match_or_create_controlled_term(

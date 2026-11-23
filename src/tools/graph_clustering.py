@@ -1,11 +1,11 @@
-"""cluster_branch — deterministic community detection on a saturated node's
+"""cluster_branch: deterministic community detection on a saturated node's
 discovery graph.
 
 Runs between check_saturation (saturated outcome) and compact_branch. Its job:
 turn "does this branch have real internal structure" from an LLM guess into a
 computed, reproducible number.
 
-Algorithm per v2 plan §2:
+Algorithm:
 1. Build weighted undirected graph from discovery_edges + content similarity.
 2. Louvain community detection (seeded, for reproducibility).
 3. Filter candidates by min size and distinctness.
@@ -362,7 +362,7 @@ async def cluster_branch(state: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# v4 — cross-niche adjacency scoring (plan §6.2)
+# cross-niche adjacency scoring
 # ---------------------------------------------------------------------------
 
 def score_niche_adjacency(
@@ -420,7 +420,7 @@ def admission_score(
     channel: dict[str, Any],
     niche_corpus: list[dict[str, Any]],
 ) -> float:
-    """Stage 3 per-channel admission score (plan §6.4).
+    """Stage 3 per-channel admission score.
 
     Token-Jaccard similarity of the channel's title+description against
     the niche's existing channel corpus. Falls back to lightweight difflib

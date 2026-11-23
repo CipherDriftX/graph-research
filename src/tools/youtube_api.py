@@ -706,7 +706,7 @@ class YouTubeAPIClient:
             "view_count": int(stats.get("viewCount", 0)),
             "published_at": snippet.get("publishedAt", ""),
             "thumbnails": snippet.get("thumbnails", {}),
-            # v3: geo/language enrichment fields from YouTube's self-report
+            # geo/language enrichment fields from YouTube's self-report
             "country": snippet.get("country", ""),
             "default_language": snippet.get("defaultLanguage", ""),
             "default_audio_language": snippet.get("defaultAudioLanguage", ""),

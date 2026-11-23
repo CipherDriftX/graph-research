@@ -1,4 +1,4 @@
-"""assign_cohorts — v4 cohort assignment node (plan §5.10, §10).
+"""assign_cohorts: cohort assignment node.
 
 Assigns channels to cohorts defined in cohort_definitions. Handles:
 - Crime's 4 mutually exclusive life-cycle cohorts (exclusive_group='crime_lifecycle')

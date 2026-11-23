@@ -1,6 +1,6 @@
-"""new_channel_discovery — parameterized search for channels created 2024-2026.
+"""new_channel_discovery: parameterized search for channels created 2024-2026.
 
-Plan §10 item 5: runs keyword_search/graph_walk explicitly parameterized to
+Runs keyword_search/graph_walk parameterized to
 prioritize candidates whose channel_creation_date falls inside the 2024-2026
 window. Uses the existing Bright Data client with additional filtering.
 """

@@ -240,7 +240,7 @@ def parse_video(row: dict) -> dict:
     Deliberately dropped: `transcript`, `formatted_transcript`, `chapters`,
     `preview_image`, `codecs`, `quality*`, `viewport_frames`, `audio_tracks`
     and the other media fields the collector returns. This harness does no
-    image or video processing — v1 reasons over engagement metrics and graph
+    image or video processing; it reasons over engagement metrics and graph
     structure only. Carrying media payloads would bloat state and the compaction
     prompts for data nothing consumes.
     """

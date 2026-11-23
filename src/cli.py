@@ -278,7 +278,7 @@ def main() -> None:
     else:
         node_names = {log.get("node_name") for log in final.get("node_logs", [])}
         reached_finalize = "finalize_dataset" in node_names
-        # v4 multi-niche: show the full cluster
+        # multi-niche: show the full cluster
         niches = final.get("selected_niches") or [final.get("selected_niche", "(none)")]
         print(f"Niche{'s' if len(niches) > 1 else ''}: {', '.join(niches)}")
         print(f"Reached finalize_dataset: {reached_finalize}")

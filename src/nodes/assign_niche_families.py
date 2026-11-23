@@ -1,4 +1,4 @@
-"""assign_niche_families — the tier above sub-niches, for every vertical.
+"""assign_niche_families: the tier above sub-niches, for every vertical.
 
 A Standard education run shipped 135 sub-niches for 167 channels, 115 of
 them holding exactly one channel: `competitive_exam_maths`,

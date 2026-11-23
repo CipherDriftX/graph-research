@@ -1,4 +1,4 @@
-"""populate_shared_fields — v4 shared field enrichment (plan §5.8, §12).
+"""populate_shared_fields: shared field enrichment.
 
 Populates creator_authority, search_browse_estimate, sponsor fields, and
 commercial_intent on channels/videos/niche_taxonomy. All fields were added

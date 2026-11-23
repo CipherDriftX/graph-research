@@ -1,4 +1,4 @@
-"""resolve_first_video_date — the channel's TRUE first-ever upload date.
+"""resolve_first_video_date: the channel's TRUE first-ever upload date.
 
 Gated by the deliverable floor, same as classify_channel/
 score_thumbnail_signals — this is a real network cost (potentially many

@@ -1,9 +1,9 @@
-"""finalize_dataset — replaces synthesize. No narrative generation.
+"""finalize_dataset: replaces synthesize. No narrative generation.
 
 Runs deterministic store queries: completeness rollup, run-level stats,
 cluster-relative percentile ranks. Populates harness_runs with final counts.
 The previous synthesize's evidence-grading engine is preserved and reused
-in extract_success_failure_factors (§7.3).
+in extract_success_failure_factors.
 """
 
 from __future__ import annotations
@@ -122,7 +122,7 @@ def finalize_dataset(state: dict) -> dict:
         conn.commit()
 
         # -- v4 non-English comparison pool and stratification -------------------
-        # Mark non-English channels for isolation (not exclusion — plan §10)
+        # Mark non-English channels so they can be isolated. They stay in the dataset.
         cur.execute(
             "UPDATE channels SET is_comparison_pool = TRUE "
             "WHERE primary_language_code IS NOT NULL "

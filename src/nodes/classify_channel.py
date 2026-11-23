@@ -1,6 +1,6 @@
-"""classify_channel — LLM classification of face/faceless, format, and niche.
+"""classify_channel: LLM classification of face/faceless, format, and niche.
 
-Gated by the deliverable floor (§6.4, src/tools/deliverable.py). Input is structured signals plus the
+Gated by the deliverable floor. Input is structured signals plus the
 channel's own title/description and a handful of recent video titles —
 never raw images or full transcripts. Output: face_status, dominant_format,
 and a proposed niche_name that gets canonicalized against niche_taxonomy
@@ -18,7 +18,7 @@ subject matter. Title/description text is cheap and already gets sent to
 the LLM elsewhere in this codebase (taxonomy building); there was no real
 cost or privacy reason to withhold it here specifically.
 
-The idempotency guard (§10 item 2): if classifier_model + classifier_version
+The idempotency guard: if classifier_model + classifier_version
 already match, skip the LLM call — a resume must not re-bill a channel that
 was already classified.
 """

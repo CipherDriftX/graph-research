@@ -137,7 +137,7 @@ def _mock_youtube(yt_mock):
 _BRIGHTDATA_CALL_SITES = (
     "src.tools.graph_walk",
     "src.tools.keyword_search",
-    # v4 added these. Leaving them unmocked did not fail loudly — it made
+    # added these. Leaving them unmocked did not fail loudly — it made
     # the test hit the REAL Bright Data API, spending live records on every
     # suite run and hanging past any sane timeout. Confirmed from a
     # `brightdata_collected records=5` line during a plain pytest run.
@@ -147,7 +147,7 @@ _BRIGHTDATA_CALL_SITES = (
 )
 
 
-# v4 added five nodes to the graph. None were added to this file's mocks, so
+# added five nodes to the graph. None were added to this file's mocks, so
 # a plain `pytest` run made real LLM calls AND read/wrote the real database —
 # the exact failure the comments below already describe for the v3 nodes,
 # repeated. Confirmed live: the hung process held connections to
@@ -201,7 +201,7 @@ async def test_end_to_end_run_completes():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        # v3 added three more LLM-calling nodes to the graph
+        # added three more LLM-calling nodes to the graph
         # (classify_channel,
         # extract_success_failure_factors) but this file's mocks were never
         # extended to cover them. Harmless against an empty test DB — but
@@ -267,7 +267,7 @@ async def test_graph_terminates_with_budget_breaker():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        # v3 added three more LLM-calling nodes to the graph
+        # added three more LLM-calling nodes to the graph
         # (classify_channel,
         # extract_success_failure_factors) but this file's mocks were never
         # extended to cover them. Harmless against an empty test DB — but

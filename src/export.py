@@ -81,11 +81,10 @@ def fetch_run_channels(
     min_subscribers: int | None = None,
     own_only: bool = False,
 ) -> list[dict[str, Any]]:
-    """Channels tagged to this run, with the full v3 enrichment set flattened.
+    """Channels tagged to this run, with every enrichment column flattened.
 
-    v1's `extra->>'engagement_rate'/'cadence'/'velocity'` JSONB reads are
-    gone — v3's score_signals/resolve_geo_language/classify_channel nodes
-    write real typed columns instead (evergreen_score, engagement_score,
+    score_signals, resolve_geo_language and classify_channel write typed
+    columns (evergreen_score, engagement_score,
     uploads_per_week_avg, country/language, niche, entertainment_score,
     ...), which is what the client's "classified, in distinguished columns"
     requirement actually asks for.
@@ -216,7 +215,7 @@ def fetch_run_videos(
     min_subscribers: int | None = None,
     own_only: bool = False,
 ) -> list[dict[str, Any]]:
-    """This run's videos, highest outlier score first, with v3's title
+    """This run's videos, highest outlier score first, with the title
     signal columns and evergreen/news flags flattened alongside them.
 
     Ordered by outlier score rather than views because the score is the point:
@@ -1685,7 +1684,7 @@ def _attribution_counts(channels: list[dict[str, Any]]) -> dict[str, int]:
     return counts
 
 
-# === v3 Excel deliverable ==================================================
+# === Excel deliverable ==================================================
 #
 # The client does not want a narrative report — they want a workbook they can
 # filter, sort, and search themselves, and later build charts from. Every
@@ -1703,7 +1702,7 @@ _EXCEL_COLUMN_WIDTHS: dict[str, int] = {
     "total_video_count": 18,
     "total_long_video_count": 22, "total_shorts_count": 18,
     "total_live_stream_count": 22,
-    # v4 taxonomy dimensions, cohorts, age/growth (client briefs §3-§8)
+    # taxonomy dimensions, cohorts, age/growth
     "primary_niche": 30, "raw_sub_niche": 30,
     "primary_topic": 24, "secondary_topic": 24, "geography_focus": 18,
     "target_audience": 24, "content_approach": 20,
@@ -1713,7 +1712,7 @@ _EXCEL_COLUMN_WIDTHS: dict[str, int] = {
     "vertical_start_date_basis": 28, "vertical_start_date_confidence": 12,
     "upload_frequency": 18, "cohorts": 34, "is_comparison_pool": 18,
     "sub_growth_30d": 16, "sub_growth_90d": 16, "views_30d": 14, "views_90d": 14,
-    # v4 video-level
+    # video-level
     "duration(in minute -by default)": 24, "sample_reason": 16, "search_browse_estimate": 22,
     "sponsor_status": 20, "sponsor_category": 18, "sponsor_name": 22,
     "crime_type": 20, "victim_type": 18, "suspect_relationship": 22,
@@ -1987,11 +1986,10 @@ def build_excel_workbook_v3(
     failure_factors: list[dict[str, Any]],
     families: list[dict[str, Any]] | None = None,
 ):
-    """The client deliverable: one workbook, eight sheets, nothing narrative.
+    """The deliverable: one workbook, eight sheets, nothing narrative.
 
-    Overview (run stats + category/niche rollup), Channels (full v3/v4
-    enrichment set), Videos and Shorts (long-form and Shorts kept apart, per
-    the client brief), Niches (category/sub-niche breakdown), Success
+    Overview (run stats + category/niche rollup), Channels (every
+    enrichment column), Videos and Shorts (long-form and Shorts kept apart), Niches (category/sub-niche breakdown), Success
     Factors, Failure Factors — each a filterable/sortable table a
     non-technical owner can explore directly, and a flat enough shape to
     pivot or chart later.
@@ -2353,11 +2351,10 @@ def export_excel(
     all_channels: bool = False,
     cap_videos: bool = False,
 ) -> Path:
-    """Write the full v3 rich workbook for a run. This is the client
-    deliverable — filterable/sortable Excel, no AI-generated narrative.
+    """Write the full workbook for a run: filterable, sortable Excel with
+    no generated narrative.
 
-    Unlike v1's report-driven export, this reads nothing from a LangGraph
-    checkpoint: every column comes straight from the store, so it works
+    It reads nothing from a LangGraph checkpoint: every column comes straight from the store, so it works
     for any completed run regardless of whether its thread checkpoint is
     still around.
 
@@ -2475,7 +2472,7 @@ def main() -> None:
     parser.add_argument("--thread-id", default=None)
     parser.add_argument(
         "--excel", action="store_true",
-        help="Also write the v3 rich Excel workbook (channels/videos/niches/factors, filterable).",
+        help="Also write the Excel workbook (channels, videos, niches, factors).",
     )
     parser.add_argument(
         "--all-channels", action="store_true",

@@ -1,10 +1,10 @@
 """The LangGraph wiring for the whole pipeline.
 
-budget_exhausted force-saturates
-active nodes then routes to compact_branch. The keyword_search / graph_walk fan-out
+budget_exhausted force-saturates active nodes, then routes to compact_branch.
+The keyword_search / graph_walk fan-out
 has a defined join point (hydrate_metadata) and per-branch failure behavior —
 record the error and continue, never silently proceed on partial results without
-flagging it in the run's logs (§0.2 item 4).
+flagging it in the run's logs.
 """
 
 from __future__ import annotations
@@ -164,7 +164,7 @@ def _ceilings() -> tuple[int, int]:
 def _guarded(fn, name: str):
     """Wrap a fan-out branch so a failure is recorded and flagged, not a silent hang.
 
-    §0.2 item 4: if one branch fails while the other succeeds, the failed branch
+    If one branch fails while the other succeeds, the failed branch
     records an error and marks itself done; the run proceeds but the error is
     visible in state["errors"] and node_logs, not swallowed.
     """
@@ -259,7 +259,7 @@ _TERMINAL_ACTIONS = {"all_done", "budget_exhausted"}
 
 def route_after_select(state: dict) -> list[str]:
     """Dispatch the discovery fan-out, unless the run is finished or moving
-    to the next niche in the cluster queue (v4, plan §7.2)."""
+    to the next niche in the cluster queue."""
     if state.get("next_action") in _TERMINAL_ACTIONS:
         # The same reasoning as route_after_compaction: a run that has
         # stopped discovering still owes a finished workbook, and jumping
@@ -268,7 +268,7 @@ def route_after_select(state: dict) -> list[str]:
         return ["extract_success_failure_factors"]
     if state.get("next_action") == "next_niche":
         return ["build_taxonomy"]
-    # v4: primary discovery tracks + bias-fixing supplementary passes
+    # primary discovery tracks + bias-fixing supplementary passes
     return ["keyword_search", "graph_walk", "breakout_scanner", "underperformer_discovery", "new_channel_discovery"]
 
 
@@ -303,14 +303,14 @@ def route_after_compaction(state: dict) -> list[str]:
     has_proposed = any(n.get("proposed_new_nodes") for n in tree.values())
     if has_pending or has_proposed:
         return ["select_next_node"]
-    # v4: if more niches remain, start the next one's taxonomy tree
+    # if more niches remain, start the next one's taxonomy tree
     if has_more_niches(state):
         return ["build_taxonomy"]
     return ["extract_success_failure_factors"]
 
 
 def route_after_floor(state: dict) -> list[str]:
-    """v3 floor gate: only qualifying channels get the expensive LLM pass."""
+    """Floor gate: only qualifying channels get the expensive LLM pass."""
     if state.get("floor_gate_eligible"):
         return ["classify_channel"]
     return ["check_saturation"]
@@ -367,7 +367,7 @@ def build_graph() -> StateGraph:
     graph.add_edge("hydrate_metadata", "resolve_geo_language")
     graph.add_edge("resolve_geo_language", "extract_metadata_signals")
     graph.add_edge("extract_metadata_signals", "score_signals")
-    # v3 floor gate: expensive LLM/vision only for qualifying channels
+    # floor gate: expensive LLM/vision only for qualifying channels
     graph.add_conditional_edges(
         "score_signals", route_after_floor,
         ["classify_channel", "check_saturation"],
@@ -532,7 +532,7 @@ async def run_pipeline(
         initial.update(state_overrides)
     initial["run_mode"] = run_mode
 
-    # v3: initialize harness_runs row at run start
+    # initialize harness_runs row at run start
     try:
         from src.db.connection import get_connection, put_connection
         conn = get_connection()

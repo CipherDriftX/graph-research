@@ -1,4 +1,4 @@
-"""populate_taxonomy_dimensions — v4 taxonomy dimension extraction (brief §3).
+"""populate_taxonomy_dimensions: taxonomy dimension extraction.
 
 Extends classify_channel's work: instead of reducing a channel to one niche_name,
 extracts 5 independent dimensions plus records the raw pre-canonicalized label.

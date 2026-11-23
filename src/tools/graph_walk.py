@@ -21,8 +21,6 @@ what the data provides: `featured_channels` entries carry a url and handle but
 no UC id, and taxonomy seeds are `@handle` strings. The UC id becomes known
 when the channel record is fetched — which is the same call that expands it, so
 resolving ids costs nothing extra.
-
-Algorithm from plan §8.5.
 """
 
 from __future__ import annotations

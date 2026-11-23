@@ -1,7 +1,7 @@
-"""compact_branch — branch compaction + cluster confirmation.
+"""compact_branch: branch compaction + cluster confirmation.
 
 Mid-tier LLM call that produces a narrative summary for one branch's
-discovered channels and computed signals. In v2, cluster_branch runs first
+discovered channels and computed signals. cluster_branch runs first
 and hands structured candidates to this node; the LLM's role is to judge
 whether the graph-detected clusters represent genuinely distinct sub-niches
 a report reader would care about, and to label them — not to discover them.
@@ -200,7 +200,7 @@ async def compact_branch(state: dict) -> dict:
     channel_ids_found = [ch["channel_id"] for ch in channels]
     videos = await store.get_videos_for_channels(channel_ids_found)
 
-    # v2: cluster_branch may have populated this. When non-empty, the LLM
+    # cluster_branch may have populated this. When non-empty, the LLM
     # judges candidates rather than discovering them from raw data.
     cluster_candidates = node.get("cluster_candidates") or None
 

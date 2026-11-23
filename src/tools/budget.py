@@ -113,7 +113,7 @@ def lineage_spend_delta(state: dict, lineage_root_id: str | None, cost_usd: floa
 
 
 def priority_score(node: dict, tree: dict[str, dict], cfg) -> float:
-    """v3: weighted priority for select_next_node traversal order (§6.5).
+    """Weighted priority for select_next_node traversal order.
 
     Higher = explored earlier. Components: cluster distinctness (how clean
     the parent split was), evidence richness (how many refs discovered),
@@ -144,7 +144,7 @@ def priority_score(node: dict, tree: dict[str, dict], cfg) -> float:
 def weighted_budget_share(
     lineage_weights: dict[str, float], budget_limit_usd: float, lineage_id: str
 ) -> float | None:
-    """v3: priority-weighted budget share instead of equal split (§6.6)."""
+    """Priority-weighted budget share instead of equal split."""
     if not lineage_weights or budget_limit_usd <= 0:
         return None
     total = sum(lineage_weights.values())

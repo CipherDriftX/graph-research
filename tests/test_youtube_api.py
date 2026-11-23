@@ -1,4 +1,4 @@
-"""get_channel_first_video_published_at — the channel's real first-ever
+"""get_channel_first_video_published_at: the channel's real first-ever
 upload date, found by paginating the uploads playlist to its true last
 page. get_channel_videos only ever fetches one page (<=50 items, newest
 first, no oldest-first sort exists), so for any channel with more than 50

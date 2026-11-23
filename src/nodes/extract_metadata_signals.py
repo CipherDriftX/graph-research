@@ -1,4 +1,4 @@
-"""extract_metadata_signals — deterministic title/hashtag/monetization extraction.
+"""extract_metadata_signals: deterministic title/hashtag/monetization extraction.
 
 Runs on every channel, gated by nothing — purely regex and pattern matching.
 Computes: title structure signals, hashtag extraction, monetization signals

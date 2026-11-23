@@ -1,4 +1,4 @@
-"""select_next_node — deterministic node selection.
+"""select_next_node: deterministic node selection.
 
 Picks the next pending tree node. No LLM call — pure Python, fully testable.
 Priority: (1) proposed_new_nodes from compaction, (2) BFS order by depth ascending.
@@ -82,7 +82,7 @@ def select_next_node(state: dict) -> dict:
                         "compaction_summary": None,
                         "proposed_new_nodes": [],
                         "schema_version": node.get("schema_version", 1),
-                        # v2: a child created from a graph-confirmed split
+                        # a child created from a graph-confirmed split
                         # inherits the parent's split quality (feeds the
                         # priority sort). Depth-1 children root their own
                         # budget lineage; deeper ones inherit the parent's.
@@ -126,7 +126,7 @@ def select_next_node(state: dict) -> dict:
             "node_logs": _log({"decision": "next_pending", "node_id": next_id, "pending_count": len(pending)}),
         }
 
-    # v4: if more niches in the cluster queue, advance instead of terminating
+    # if more niches in the cluster queue, advance instead of terminating
     if has_more_niches(state):
         return {
             "next_action": "next_niche",

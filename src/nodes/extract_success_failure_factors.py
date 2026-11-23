@@ -1,4 +1,4 @@
-"""extract_success_failure_factors — structured factor extraction for classified channels.
+"""extract_success_failure_factors: structured factor extraction for classified channels.
 
 Gated by the deliverable floor. Reads a channel's own computed signals,
 expressed as percentile rank against every other floor-qualifying channel in
@@ -7,7 +7,7 @@ apply and how strong the evidence is.
 
 Output is rows in channel_success_factors / channel_failure_factors — never prose.
 
-Evidence grading (§ design note): a prior version graded every factor off a
+Evidence grading: a prior version graded every factor off a
 single fixed check — engagement_score > 50 — regardless of which factor was
 actually being claimed. Two failures from that: (1) engagement_score here is
 a weighted average of ratios each capped at 1.0 and multiplied by 100, so

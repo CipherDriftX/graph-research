@@ -13,9 +13,6 @@ to `keyword_queries_per_round` and every discovery job carries
 `limit_per_input`. Measured live, an uncapped keyword returned 469 records
 ($0.70); the previous unbounded 6-qualifiers-per-keyword fan-out would have
 issued ~30 of those per round.
-
-Plan §0.2 item 3 required specifying this; the source material had it as
-"not yet specified" — we specify it here.
 """
 
 from __future__ import annotations

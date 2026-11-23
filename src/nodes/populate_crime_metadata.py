@@ -1,4 +1,4 @@
-"""populate_crime_metadata — v4 Crime vertical enrichment (brief §8-10).
+"""populate_crime_metadata: Crime vertical enrichment.
 
 Extracts case_metadata, reveal_mechanisms, and comment samples for
 qualifying Crime channels. Uses LLM for structured extraction with

@@ -1,4 +1,4 @@
-"""underperformer_discovery — deliberate inversion of size-biased graph walk (v4, plan §10).
+"""underperformer_discovery: deliberate inversion of size-biased graph walk.
 
 Samples from the bottom of each node's discovered-but-excluded backlog
 (channels min_subscribers_for_expansion correctly excluded from primary

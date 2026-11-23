@@ -156,7 +156,7 @@ class TreeNode(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     saturated_at: Optional[str] = None
 
-    # --- v2 adaptive-depth fields ---
+    # --- adaptive-depth fields ---
     # The depth-1 ancestor this node's spend rolls up into, for the
     # per-branch-lineage budget governor. Depth-1 nodes carry their own id;
     # deeper nodes inherit their parent's. None for the root.
@@ -218,7 +218,7 @@ class HarnessState(TypedDict, total=False):
 
     candidate_niches: Annotated[list[str], lambda a, b: b]
     selected_niche: str
-    # v3 multi-niche: the ranked queue of niches to process within one run.
+    # multi-niche: the ranked queue of niches to process within one run.
     selected_niches: list[str]
     # Current position in the niche queue.
     niche_index: int
@@ -295,10 +295,10 @@ class HarnessState(TypedDict, total=False):
     # Count of channels that met the subscriber floor and were classified
     channels_enriched_this_run: Annotated[int, _accumulate_int]
 
-    # v4: which run mode this is (plan §9.1)
+    # which run mode this is
     run_mode: Literal["cold_start", "augment", "snapshot_refresh"]
 
-    # v4: adjacency cluster bookkeeping (plan §7.1, §7.5)
+    # adjacency cluster bookkeeping
     niche_cluster_roles: dict[str, str]
     niche_cluster_scores: dict[str, float]
 
@@ -380,7 +380,7 @@ def create_augmented_state(
     candidate_niches: list[str],
     budget_limit_usd: float = 10.0,
 ) -> dict:
-    """Plan §9.2: pre-load frontier exclusion sets from Postgres.
+    """Pre-load frontier exclusion sets from Postgres.
 
     Like create_initial_state, except expanded_channel_refs,
     visited_channel_ids, hydrated_channel_ids, and channel_refs_by_id
@@ -492,7 +492,7 @@ def migrate_state(state: dict) -> dict:
         version = 5
 
     if version < 6:
-        # v2 adaptive depth. Existing tree nodes get split_method="llm_seed"
+        # adaptive depth. Existing tree nodes get split_method="llm_seed"
         # — the honest label, every pre-v2 split really was LLM-seeded — and
         # the cluster fields defaulted. lineage_root_id is derivable from the
         # tree (depth-1 nodes root their own lineage), so backfill it rather
@@ -519,7 +519,7 @@ def migrate_state(state: dict) -> dict:
         version = 6
 
     if version < 7:
-        # v3 dataset-first. Old checkpoints were single-niche; the multi-niche
+        # dataset-first. Old checkpoints were single-niche; the multi-niche
         # queue defaults to whatever niche was selected. No data was enriched
         # pre-v3, so spend_by_model starts empty. Every v3 enrichment column
         # gets the honest "not yet enriched" default — see the DDL for per-
@@ -534,7 +534,7 @@ def migrate_state(state: dict) -> dict:
         version = 7
 
     if version < 8:
-        # v4 multi-vertical adjacency. Pre-v8 checkpoints were single-niche
+        # multi-vertical adjacency. Pre-v8 checkpoints were single-niche
         # runs and have no cluster bookkeeping — default honestly to empty.
         state.setdefault("run_mode", "cold_start")
         state.setdefault("niche_cluster_roles", {})

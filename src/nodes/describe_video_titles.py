@@ -1,4 +1,4 @@
-"""describe_video_titles — one-sentence, title-only description per video.
+"""describe_video_titles: one-sentence, title-only description per video.
 
 The video-level analogue of classify_channel's niche_description: not a
 summary of the video's content (nothing here ever fetches a transcript or

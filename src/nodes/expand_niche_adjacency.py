@@ -1,10 +1,8 @@
-"""expand_niche_adjacency — v4 adjacency cluster expansion node.
+"""expand_niche_adjacency: build the cluster of niches a run researches.
 
 Runs once after queue_niches sets the target niche. Uses the ontology
 (niche_adjacency table) + empirical graph scoring (cluster_branch's
 machinery, reused across niche boundaries) to build the research cluster.
-
-Plan §6.1-6.4, §7.1.
 """
 
 from __future__ import annotations
@@ -126,7 +124,7 @@ async def expand_niche_adjacency(state: dict) -> dict:
 
             # Strengthen: also check if the adjacency has real description-level signal.
             # A high graph score from one edge doesn't mean the niches are genuinely adjacent —
-            # cross-check with description similarity (plan §6.4, user requirement #4).
+            # cross-check with description similarity.
             desc_score = 0.0
             if neighbor_chs and target_chs:
                 # Sample: check how many neighbor channels have high description overlap
