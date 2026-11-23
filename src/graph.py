@@ -408,6 +408,43 @@ def compile_graph(checkpointer=None):
     return graph.compile()
 
 
+def _run_snapshot_refresh(run_id: str, thread_id: str) -> dict:
+    """Refresh stats for the whole store. No discovery and no LLM calls."""
+    from src.db.connection import get_connection, put_connection
+    from src.tools.snapshot_refresh import refresh_snapshots
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO harness_runs (run_id, thread_id, run_mode) "
+                "VALUES (%s, %s, 'snapshot_refresh') ON CONFLICT (run_id) DO NOTHING",
+                (run_id, thread_id),
+            )
+        conn.commit()
+        try:
+            summary = refresh_snapshots(conn, run_id)
+        except Exception:
+            conn.rollback()
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE harness_runs SET status = 'failed', completed_at = NOW() WHERE run_id = %s",
+                    (run_id,),
+                )
+            conn.commit()
+            raise
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE harness_runs SET status = 'completed', completed_at = NOW(), "
+                "channels_refreshed = %s, videos_persisted = %s WHERE run_id = %s",
+                (summary["channels_refreshed"], summary["videos_refreshed"], run_id),
+            )
+        conn.commit()
+    finally:
+        put_connection(conn)
+    return {"run_mode": "snapshot_refresh", "run_id": run_id, "snapshot": summary}
+
+
 async def run_pipeline(
     candidate_niches: list[str],
     run_id: str,
@@ -489,47 +526,7 @@ async def run_pipeline(
             budget_limit_usd=get_config().harness.budget_limit_usd,
         )
     elif run_mode == "snapshot_refresh":
-        # Snapshot-only: no discovery, no LLM — just bulk YouTube API refresh
-        from src.tools.youtube_api import YouTubeAPIClient
-        from src.db.connection import get_connection as gc, put_connection as pc
-        from src.tools.dedup import persist_channel_snapshot
-        client = YouTubeAPIClient()
-        conn = gc()
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT channel_id, subscriber_count, view_count, video_count FROM channels")
-            rows = cur.fetchall()
-            cur.close()
-            refreshed = 0
-            for ch_id, subs, views, vc in rows:
-                try:
-                    persist_channel_snapshot(conn, ch_id, run_id, subs, views, vc)
-                    refreshed += 1
-                except Exception:
-                    continue
-            # Video snapshots: bulk-refresh via YouTube API
-            cur2 = conn.cursor()
-            cur2.execute(
-                "INSERT INTO video_snapshots (video_id, run_id, view_count, like_count, comment_count, video_age_hours) "
-                "SELECT video_id, %s, view_count, like_count, comment_count, "
-                "EXTRACT(EPOCH FROM (now() - published_at)) / 3600.0 "
-                "FROM videos ON CONFLICT (video_id, run_id) DO NOTHING",
-                (run_id,),
-            )
-            conn.commit()
-            cur2.close()
-            cur3 = conn.cursor()
-            cur3.execute(
-                "UPDATE harness_runs SET status='completed', completed_at=now(), "
-                "channels_refreshed=%s, channels_discovered=0, channels_enriched=0, "
-                "videos_persisted=(SELECT COUNT(*) FROM videos) WHERE run_id=%s",
-                (refreshed, run_id),
-            )
-            conn.commit()
-            cur3.close()
-        finally:
-            pc(conn)
-        return {"run_mode": "snapshot_refresh", "run_id": run_id}
+        return _run_snapshot_refresh(run_id, thread_id)
     else:
         initial = create_initial_state(run_id, thread_id, candidate_niches)
     if state_overrides:

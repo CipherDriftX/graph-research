@@ -222,7 +222,10 @@ def _preflight_account_budget(resume_thread_id: str | None = None) -> bool:
 def main() -> None:
     configure_logging()
     parser = argparse.ArgumentParser(description="YouTube niche research harness")
-    parser.add_argument("niches", nargs="+", help="Candidate niche topic strings (10-30 recommended)")
+    parser.add_argument(
+        "niches", nargs="*",
+        help="Niches to research. The first is the target; the rest run after it in order.",
+    )
     parser.add_argument("--resume", metavar="THREAD_ID", help="Resume a prior run by thread_id")
     parser.add_argument(
         "--run-id", metavar="RUN_ID",
@@ -233,7 +236,10 @@ def main() -> None:
         help="Use this thread_id for a fresh run (ignored with --resume, which supplies its own)",
     )
     parser.add_argument("--augment", action="store_true", help="Augment existing dataset (frontier pre-hydrated from Postgres)")
-    parser.add_argument("--snapshot", action="store_true", help="Snapshot-only run: bulk API refresh, no discovery")
+    parser.add_argument(
+        "--snapshot", action="store_true",
+        help="Refresh stats for every stored channel and video. No discovery, no LLM calls.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit final state as JSON")
     parser.add_argument(
         "--quota-check",
@@ -258,8 +264,10 @@ def main() -> None:
         print("Error: --augment and --resume are mutually exclusive. --augment starts a new run_id; --resume continues an old one.")
         raise SystemExit(1)
     if args.snapshot and (args.resume or args.augment):
-        print("Error: --snapshot is standalone — it runs bulk refresh only, not alongside --resume or --augment.")
+        print("Error: --snapshot runs on its own, not with --resume or --augment.")
         raise SystemExit(1)
+    if not args.niches and not (args.snapshot or args.resume):
+        parser.error("give at least one niche, or use --snapshot or --resume")
     if args.thread_id and args.resume:
         print("Error: --thread-id and --resume are mutually exclusive -- --resume supplies the thread_id being resumed.")
         raise SystemExit(1)
@@ -271,6 +279,12 @@ def main() -> None:
 
     if args.json:
         print(json.dumps(final, indent=2, default=str))
+    elif final.get("run_mode") == "snapshot_refresh":
+        snap = final["snapshot"]
+        print(f"Run: {final['run_id']}")
+        print(f"Channels refreshed: {snap['channels_refreshed']} of {snap['channels_requested']}")
+        print(f"Videos refreshed: {snap['videos_refreshed']} of {snap['videos_requested']}")
+        print(f"YouTube quota used: {snap['quota_used']}")
     else:
         node_names = {log.get("node_name") for log in final.get("node_logs", [])}
         reached_finalize = "finalize_dataset" in node_names
