@@ -1,8 +1,8 @@
 """Export a run's research output as files a human can be handed.
 
 The store answers queries; it does not produce a deliverable. This turns one
-run into a directory that a Content Creation Team can open and that Claude can
-re-read later to write a hand-off report.
+run into a directory a content team can open directly: a workbook, flat CSVs,
+an interactive graph and a JSON bundle with everything in it.
 
 Run-scoped through `category_tags`, not through the store's entity tables.
 `channels` and `videos` are shared — a channel can belong to a Finance run and
