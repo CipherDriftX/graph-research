@@ -370,12 +370,9 @@ class TestEveryModelCallThatWantsJsonRetriesProse:
     retry means the answer to "will I see that error again" is "yes, from a
     different node" -- which is not an answer."""
 
-    #: The three that already retry through their own attempt loop rather
-    #: than complete_json, checked separately below.
-    OWN_LOOP = {"compact_branch", "synthesize", "taxonomy"}
-    #: Not the pipeline: the offline judge, run by hand against hand-graded
-    #: cases, where a refusal is a result to look at rather than retry.
-    EXEMPT = {"judge"}
+    #: These retry through their own attempt loop rather than complete_json,
+    #: checked separately below.
+    OWN_LOOP = {"compact_branch", "taxonomy"}
 
     def test_no_pipeline_node_parses_a_model_reply_without_a_retry(self):
         import pathlib
@@ -388,7 +385,7 @@ class TestEveryModelCallThatWantsJsonRetriesProse:
             if "loads_forgiving" not in code and "complete_json" not in code:
                 continue
             stem = path.stem
-            if stem in self.OWN_LOOP or stem in self.EXEMPT:
+            if stem in self.OWN_LOOP:
                 continue
             if "complete_json" not in code:
                 unprotected.append(str(path))

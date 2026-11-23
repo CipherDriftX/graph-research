@@ -187,29 +187,6 @@ class BranchCompaction(BaseModel):
     compiled_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
-class GradedFinding(BaseModel):
-    """A single finding from synthesis with evidence-grade annotation."""
-    claim: str
-    grade: Literal["strong", "moderate", "weak"]
-    evidence: dict[str, Any] = Field(default_factory=dict)
-    supporting_channel_ids: list[str] = Field(default_factory=list)
-    pattern_type: str = ""
-
-
-class FinalReport(BaseModel):
-    """The final graded research report."""
-    niche: str
-    run_id: str
-    generated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
-    summary: str = ""
-    findings: list[GradedFinding] = Field(default_factory=list)
-    cannot_determine: list[str] = Field(default_factory=list)
-    discovery_stats: dict[str, Any] = Field(default_factory=dict)
-    # Direct content-strategy guidance for the team deciding what to make —
-    # not caveats about the data. {"do": [...], "avoid": [...]}.
-    recommendations: dict[str, list[str]] = Field(default_factory=dict)
-
-
 class NodeLog(BaseModel):
     """Per-node structured log entry."""
     node_name: str
@@ -342,7 +319,6 @@ class HarnessState(TypedDict, total=False):
 
     schema_version: int
 
-    final_report: Optional[dict]
 
     keyword_search_done: bool
     graph_walk_done: bool
@@ -393,7 +369,6 @@ def create_initial_state(
         "errors": [],
         "node_logs": [],
         "schema_version": 10,
-        "final_report": None,
         "keyword_search_done": False,
         "graph_walk_done": False,
     }
@@ -470,7 +445,6 @@ def migrate_state(state: dict) -> dict:
         state.setdefault("errors", [])
         state.setdefault("node_logs", [])
         state.setdefault("budget_spent_usd", 0.0)
-        state.setdefault("final_report", None)
         state.setdefault("keyword_search_done", False)
         state.setdefault("graph_walk_done", False)
         version = 1

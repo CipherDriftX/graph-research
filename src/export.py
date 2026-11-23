@@ -1647,14 +1647,12 @@ def export_run(run_id: str, thread_id: str | None = None) -> Path:
     if thread_id is None:
         logger.warning("export_no_thread_id", run_id=run_id)
 
-    report: dict[str, Any] = {}
     state: dict[str, Any] = {}
     if thread_id:
         try:
             from src.api.server import _load_checkpoint
 
             state = _load_checkpoint(thread_id) or {}
-            report = state.get("final_report") or {}
         except Exception as exc:  # pragma: no cover - environment dependent
             logger.warning("export_checkpoint_unavailable", run_id=run_id, error=str(exc))
 
@@ -1675,7 +1673,7 @@ def export_run(run_id: str, thread_id: str | None = None) -> Path:
     manifest = {
         "run_id": run_id,
         "thread_id": thread_id,
-        "niche": report.get("niche") or state.get("selected_niche", ""),
+        "niche": state.get("selected_niche", ""),
         "exported_at": datetime.now(timezone.utc).isoformat(),
         "profile": cfg.profile,
         "channels": len(channels),
@@ -1753,7 +1751,7 @@ def export_run(run_id: str, thread_id: str | None = None) -> Path:
     )
     (out / "research_bundle.json").write_text(
         json.dumps(
-            {"manifest": manifest, "report": report,
+            {"manifest": manifest,
              "channels": channels, "videos": videos, "edges": edges},
             indent=2, default=str,
         ),

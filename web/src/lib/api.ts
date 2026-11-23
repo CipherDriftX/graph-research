@@ -234,44 +234,6 @@ export interface TreeNode {
   _gw_novelty_history?: number[];
 }
 
-export type Grade = 'strong' | 'moderate' | 'weak';
-
-export interface GradedFinding {
-  claim: string;
-  grade: Grade;
-  pattern_type: string;
-  supporting_channel_ids: string[];
-  evidence: {
-    corroboration?: Grade;
-    consistency?: Grade;
-    recency?: Grade;
-    effect_size?: Grade;
-    max_outlier_score?: number;
-    [k: string]: unknown;
-  };
-}
-
-export interface FinalReport {
-  niche: string;
-  run_id: string;
-  generated_at: string;
-  summary: string;
-  findings: GradedFinding[];
-  cannot_determine: string[];
-  discovery_stats: Record<string, number | string>;
-}
-
-export interface ReportSummary {
-  run_id: string;
-  niche: string;
-  generated_at: string;
-  summary: string;
-  finding_count: number;
-  grade_counts: Record<Grade, number>;
-  cannot_determine_count: number;
-  discovery_stats: Record<string, number | string>;
-}
-
 export interface RunState {
   selected_niche: string;
   tree: Record<string, TreeNode>;
@@ -280,7 +242,6 @@ export interface RunState {
   novelty_rates: number[];
   saturated_branches: string[];
   errors: { node_name: string; error_type: string; message: string; timestamp: string }[];
-  final_report: FinalReport | null;
   schema_version: number | null;
   discovered_channel_count: number;
   discovered_video_count: number;
@@ -425,7 +386,6 @@ export const api = {
 
   run: (runId: string) => get<RunDetail>(`/api/runs/${encodeURIComponent(runId)}`),
 
-  reports: () => get<ReportSummary[]>('/api/reports'),
 
   logs: (runId: string, since = 0) =>
     get<{ entries: NodeLogEntry[]; cursor: number }>(

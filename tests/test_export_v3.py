@@ -132,9 +132,8 @@ class TestBuildExcelWorkbookV3:
 
 class TestExportExcel:
     def test_assembles_sheets_from_the_store_not_a_checkpoint(self, tmp_path):
-        """export_excel must not touch _load_checkpoint / final_report at
-        all — it is the v3 dataset-first deliverable, independent of
-        whether a run's LangGraph thread checkpoint still exists."""
+        """export_excel reads the store only, so it works even when the
+        run's checkpoint is gone."""
         out_path = tmp_path / "crime.xlsx"
         with (
             patch("src.export.fetch_run_channels", return_value=[{"channel_id": "c1", "subscriber_count": 60000}]),

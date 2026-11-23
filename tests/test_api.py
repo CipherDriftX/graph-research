@@ -118,11 +118,11 @@ class TestListRuns:
         assert runs[0]["last_node"] == "queue_niches"
         assert runs[0]["cost_usd"] == 0.5
 
-    def test_status_complete_when_synthesize_logged(self, client, log_home):
+    def test_status_complete_when_finalize_logged(self, client, log_home):
         _write_registry(log_home, [{"run_id": "run-b", "thread_id": "t-b", "niches": [], "pid": 1, "started_at": "2026-08-13T10:00:00Z"}])
         _write_log(log_home, "run-b", [
             {"node_name": "queue_niches", "cost_usd": 0.1},
-            {"node_name": "synthesize", "cost_usd": 0.2},
+            {"node_name": "finalize_dataset", "cost_usd": 0.2},
         ])
 
         with patch.object(runs_mod, "is_process_running", return_value=False):
@@ -130,7 +130,7 @@ class TestListRuns:
 
         assert runs[0]["status"] == "complete"
 
-    def test_status_stopped_when_dead_without_synthesize(self, client, log_home):
+    def test_status_stopped_when_dead_before_finalize(self, client, log_home):
         """A crashed run must not be reported as complete — that would hide
         the failure behind a green light."""
         _write_registry(log_home, [{"run_id": "run-c", "thread_id": "t-c", "niches": [], "pid": 1, "started_at": "2026-08-13T10:00:00Z"}])
@@ -259,7 +259,7 @@ class TestGetRun:
 
     def test_returns_checkpoint_state(self, client, log_home):
         _write_registry(log_home, [{"run_id": "run-e", "thread_id": "t-e", "niches": [], "pid": 1, "started_at": ""}])
-        _write_log(log_home, "run-e", [{"node_name": "synthesize"}])
+        _write_log(log_home, "run-e", [{"node_name": "finalize_dataset"}])
 
         state = {"selected_niche": "3d printing", "graph_walk_exclusive_count": 7}
         with patch.object(runs_mod, "is_process_running", return_value=False), patch(
@@ -269,91 +269,6 @@ class TestGetRun:
 
         assert body["state"]["graph_walk_exclusive_count"] == 7
         assert body["state_error"] is None
-
-
-class TestListReports:
-    def test_only_runs_with_a_final_report_are_included(self, client, log_home):
-        """A run that's still going, errored out, or saturated with nothing
-        found must not show up as a broken/empty card."""
-        _write_registry(log_home, [
-            {"run_id": "run-with-report", "thread_id": "t-1", "niches": ["3d printing"], "pid": None, "started_at": "2026-08-13T10:00:00Z"},
-            {"run_id": "run-no-report", "thread_id": "t-2", "niches": ["diy"], "pid": None, "started_at": "2026-08-13T09:00:00Z"},
-        ])
-        _write_log(log_home, "run-with-report", [{"node_name": "synthesize"}])
-        _write_log(log_home, "run-no-report", [{"node_name": "graph_walk"}])
-
-        report = {
-            "niche": "3d printing",
-            "generated_at": "2026-08-13T10:30:00Z",
-            "summary": "Found a strong pattern.",
-            "findings": [{"grade": "strong"}, {"grade": "strong"}, {"grade": "weak"}],
-            "cannot_determine": ["causal claims excluded"],
-            "discovery_stats": {"total_channels": 42},
-        }
-
-        def fake_checkpoint(thread_id):
-            return {"final_report": report} if thread_id == "t-1" else {"final_report": None}
-
-        with patch.object(runs_mod, "is_process_running", return_value=False), patch(
-            "src.api.server._load_checkpoint", side_effect=fake_checkpoint
-        ):
-            body = client.get("/api/reports").json()
-
-        assert len(body) == 1
-        row = body[0]
-        assert row["run_id"] == "run-with-report"
-        assert row["niche"] == "3d printing"
-        assert row["finding_count"] == 3
-        assert row["grade_counts"] == {"strong": 2, "moderate": 0, "weak": 1}
-        assert row["cannot_determine_count"] == 1
-        assert row["discovery_stats"] == {"total_channels": 42}
-
-    def test_checkpoint_failure_for_one_run_does_not_break_the_list(self, client, log_home):
-        """Regression: a stale/unreachable checkpoint for one run must not
-        take down the whole reports list — it should just be skipped."""
-        _write_registry(log_home, [
-            {"run_id": "run-ok", "thread_id": "t-ok", "niches": [], "pid": None, "started_at": "2026-08-13T10:00:00Z"},
-            {"run_id": "run-broken", "thread_id": "t-broken", "niches": [], "pid": None, "started_at": "2026-08-13T09:00:00Z"},
-        ])
-        _write_log(log_home, "run-ok", [{"node_name": "synthesize"}])
-        _write_log(log_home, "run-broken", [{"node_name": "synthesize"}])
-
-        report = {"niche": "ok niche", "generated_at": "t", "summary": "", "findings": [], "cannot_determine": []}
-
-        def fake_checkpoint(thread_id):
-            if thread_id == "t-broken":
-                raise RuntimeError("checkpoint gone")
-            return {"final_report": report}
-
-        with patch.object(runs_mod, "is_process_running", return_value=False), patch(
-            "src.api.server._load_checkpoint", side_effect=fake_checkpoint
-        ):
-            body = client.get("/api/reports").json()
-
-        assert len(body) == 1
-        assert body[0]["run_id"] == "run-ok"
-
-    def test_sorted_newest_first(self, client, log_home):
-        _write_registry(log_home, [
-            {"run_id": "run-older", "thread_id": "t-older", "niches": [], "pid": None, "started_at": ""},
-            {"run_id": "run-newer", "thread_id": "t-newer", "niches": [], "pid": None, "started_at": ""},
-        ])
-        _write_log(log_home, "run-older", [{"node_name": "synthesize"}])
-        _write_log(log_home, "run-newer", [{"node_name": "synthesize"}])
-
-        def fake_checkpoint(thread_id):
-            gen_at = "2026-08-13T08:00:00Z" if thread_id == "t-older" else "2026-08-13T12:00:00Z"
-            return {"final_report": {"niche": "n", "generated_at": gen_at, "summary": "", "findings": [], "cannot_determine": []}}
-
-        with patch.object(runs_mod, "is_process_running", return_value=False), patch(
-            "src.api.server._load_checkpoint", side_effect=fake_checkpoint
-        ):
-            body = client.get("/api/reports").json()
-
-        assert [r["run_id"] for r in body] == ["run-newer", "run-older"]
-
-    def test_empty_when_no_reports_exist(self, client, log_home):
-        assert client.get("/api/reports").json() == []
 
 
 class TestRunLogs:

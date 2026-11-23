@@ -147,7 +147,6 @@ class TestReplayEndToEnd:
         with (
             patch("src.nodes.taxonomy.complete_tier") as tax,
             patch("src.nodes.compact_branch.complete_tier") as comp,
-            patch("src.nodes.synthesize.complete_tier") as syn,
             # These three v3 nodes' eligibility queries carry no run_id
             # scoping — against a shared dev DB that already has real
             # floor-qualifying channels in it (from any live run), an
@@ -174,14 +173,12 @@ class TestReplayEndToEnd:
             patch("src.nodes.resolve_first_video_date.get_connection", side_effect=Exception("test isolation: no real DB")),
             patch("src.tools.hydrate_metadata.YouTubeAPIClient") as yt,
             patch("src.nodes.compact_branch.get_store", return_value=store),
-            patch("src.nodes.synthesize.get_store", return_value=store),
             patch("src.tools.dedup.persist_edges", return_value=0),
             patch("src.db.connection.get_connection"),
             patch("src.db.connection.put_connection"),
         ):
             _llm(tax)
             _llm(comp)
-            _llm(syn)
             _llm(classify)
             _llm(factors)
             _llm(describe)
@@ -199,10 +196,7 @@ class TestReplayEndToEnd:
             )
 
         assert final.get("selected_niche") == "Finance"
-        # v3 is dataset-first (ADR-0008): synthesize()/final_report were
-        # retired in favor of finalize_dataset writing rollups straight to
-        # the store. A completed run is proven by finalize_dataset firing
-        # at the end of the graph, not by a report payload.
+        # A completed run is one where finalize_dataset fired at the end of the graph.
         node_names = {log.get("node_name") for log in final.get("node_logs", [])}
         assert "finalize_dataset" in node_names, "a replay run must reach finalize_dataset"
 
@@ -221,7 +215,6 @@ class TestReplayEndToEnd:
         with (
             patch("src.nodes.taxonomy.complete_tier") as tax,
             patch("src.nodes.compact_branch.complete_tier") as comp,
-            patch("src.nodes.synthesize.complete_tier") as syn,
             # These three v3 nodes' eligibility queries carry no run_id
             # scoping — against a shared dev DB that already has real
             # floor-qualifying channels in it (from any live run), an
@@ -248,14 +241,12 @@ class TestReplayEndToEnd:
             patch("src.nodes.resolve_first_video_date.get_connection", side_effect=Exception("test isolation: no real DB")),
             patch("src.tools.hydrate_metadata.YouTubeAPIClient") as yt,
             patch("src.nodes.compact_branch.get_store", return_value=store),
-            patch("src.nodes.synthesize.get_store", return_value=store),
             patch("src.tools.dedup.persist_edges", return_value=0),
             patch("src.db.connection.get_connection"),
             patch("src.db.connection.put_connection"),
         ):
             _llm(tax)
             _llm(comp)
-            _llm(syn)
             _llm(classify)
             _llm(factors)
             _llm(describe)
@@ -294,7 +285,6 @@ class TestReplayEndToEnd:
         with (
             patch("src.nodes.taxonomy.complete_tier") as tax,
             patch("src.nodes.compact_branch.complete_tier") as comp,
-            patch("src.nodes.synthesize.complete_tier") as syn,
             # These three v3 nodes' eligibility queries carry no run_id
             # scoping — against a shared dev DB that already has real
             # floor-qualifying channels in it (from any live run), an
@@ -321,14 +311,12 @@ class TestReplayEndToEnd:
             patch("src.nodes.resolve_first_video_date.get_connection", side_effect=Exception("test isolation: no real DB")),
             patch("src.tools.hydrate_metadata.YouTubeAPIClient") as yt,
             patch("src.nodes.compact_branch.get_store", return_value=store),
-            patch("src.nodes.synthesize.get_store", return_value=store),
             patch("src.tools.dedup.persist_edges", return_value=0),
             patch("src.db.connection.get_connection"),
             patch("src.db.connection.put_connection"),
         ):
             _llm(tax)
             _llm(comp)
-            _llm(syn)
             _llm(classify)
             _llm(factors)
             _llm(describe)

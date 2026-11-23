@@ -30,15 +30,8 @@ from src.config import get_config
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-#: Reaching one of these means the graph ran to its end, so the run
-#: finished rather than being cut short.
-#:
-#: It used to test for "synthesize" alone, and the graph does not contain a
-#: node by that name -- its terminal edge is finalize_dataset -> END. So no
-#: run has ever satisfied it, and every completed run reported "stopped",
-#: in red, next to a workbook it had finished writing. synthesize is kept
-#: for older runs whose logs carry it.
-TERMINAL_NODES = frozenset({"finalize_dataset", "synthesize"})
+#: Reaching this node means the graph ran to its end rather than being cut short.
+TERMINAL_NODES = frozenset({"finalize_dataset"})
 
 
 def log_dir() -> Path:

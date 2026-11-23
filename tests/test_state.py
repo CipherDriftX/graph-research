@@ -175,7 +175,6 @@ class TestCreateInitialState:
         assert state["errors"] == []
         assert state["node_logs"] == []
         assert state["schema_version"] == CURRENT_SCHEMA_VERSION
-        assert state["final_report"] is None
         assert state["keyword_search_done"] is False
         assert state["graph_walk_done"] is False
         assert state["branch_lineage_spend"] == {}
@@ -200,7 +199,6 @@ class TestMigrateState:
         assert result["errors"] == []
         assert result["node_logs"] == []
         assert result["budget_spent_usd"] == 0.0
-        assert result["final_report"] is None
         assert result["keyword_search_done"] is False
         assert result["graph_walk_done"] is False
         assert result["saturated_branches"] == []

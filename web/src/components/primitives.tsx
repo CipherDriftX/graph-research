@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { DiscoveryMethod, Grade, RunStatus } from '../lib/api';
+import type { DiscoveryMethod, RunStatus } from '../lib/api';
 
 /* --------------------------------------------------------------------------
  * Surfaces
@@ -287,76 +287,6 @@ export function StatTile({
       </div>
       {sub ? <p className="mt-1.5 text-xs text-ink-3">{sub}</p> : null}
     </div>
-  );
-}
-
-/* --------------------------------------------------------------------------
- * Evidence grade.
- *
- * Grade is ordinal, so it takes a single-hue ramp (strong = full signal,
- * weak = receded) rather than a traffic light. Colour never carries it alone:
- * every badge ships the word and a filled-pip count, which is what survives
- * greyscale, CVD, and forced-colors.
- * ----------------------------------------------------------------------- */
-
-export const GRADE_COLOR: Record<Grade, string> = {
-  strong: 'var(--grade-strong)',
-  moderate: 'var(--grade-moderate)',
-  weak: 'var(--grade-weak)',
-};
-
-const GRADE_PIPS: Record<Grade, number> = { strong: 3, moderate: 2, weak: 1 };
-
-const GRADE_ORDER: Grade[] = ['strong', 'moderate', 'weak'];
-
-/** Compact "N strong · N moderate · N weak" summary for a report card —
- * zero-count grades are omitted rather than cluttering the row with "0". */
-export function GradeTally({ counts }: { counts: Record<Grade, number> }) {
-  const present = GRADE_ORDER.filter((g) => counts[g] > 0);
-  if (present.length === 0) {
-    return <span className="text-xs text-ink-3">No findings</span>;
-  }
-  return (
-    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-      {present.map((grade) => (
-        <span
-          key={grade}
-          className="inline-flex items-center gap-1.5 font-mono text-xs"
-          style={{ color: GRADE_COLOR[grade] }}
-        >
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: GRADE_COLOR[grade] }} />
-          {counts[grade]} {grade}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-export function GradeBadge({ grade, size = 'md' }: { grade: Grade; size?: 'sm' | 'md' }) {
-  const color = GRADE_COLOR[grade];
-  const pips = GRADE_PIPS[grade];
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded border px-1.5 py-0.5 font-mono uppercase tracking-wide ${
-        size === 'sm' ? 'text-[10px]' : 'text-[11px]'
-      }`}
-      style={{
-        color,
-        borderColor: `color-mix(in oklab, ${color} 45%, transparent)`,
-        background: `color-mix(in oklab, ${color} 10%, transparent)`,
-      }}
-    >
-      <span aria-hidden className="flex gap-[2px]">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="block h-[7px] w-[3px] rounded-[1px]"
-            style={{ background: i < pips ? color : 'currentColor', opacity: i < pips ? 1 : 0.22 }}
-          />
-        ))}
-      </span>
-      {grade}
-    </span>
   );
 }
 

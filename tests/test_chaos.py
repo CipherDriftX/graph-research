@@ -207,24 +207,20 @@ async def test_keyword_search_branch_fails_graph_walk_succeeds():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        patch("src.nodes.synthesize.complete_tier") as mock_syn,
         _writeup_chain_stubbed(),
         patch("src.tools.keyword_search.BrightDataClient") as mock_bd_kw,
         patch("src.tools.graph_walk.BrightDataClient") as mock_bd_gw,
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
-        patch("src.nodes.synthesize.get_store") as mock_store_syn,
         patch("src.db.connection.get_connection") as mock_get_conn,
         patch("src.db.connection.put_connection") as mock_put_conn,
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
-        _mock_llm_tier(mock_syn)
         _patch_keyword_fail(mock_bd_kw)
         _patch_graph_walk_success(mock_bd_gw)
         _mock_youtube(mock_yt)
         _mock_store(mock_store)
-        _mock_store(mock_store_syn)
         mock_get_conn.return_value = MagicMock()
 
         final = await run_pipeline(
@@ -246,24 +242,20 @@ async def test_graph_walk_branch_fails_keyword_succeeds():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        patch("src.nodes.synthesize.complete_tier") as mock_syn,
         _writeup_chain_stubbed(),
         patch("src.tools.keyword_search.BrightDataClient") as mock_bd_kw,
         patch("src.tools.graph_walk.BrightDataClient") as mock_bd_gw,
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
-        patch("src.nodes.synthesize.get_store") as mock_store_syn,
         patch("src.db.connection.get_connection") as mock_get_conn,
         patch("src.db.connection.put_connection") as mock_put_conn,
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
-        _mock_llm_tier(mock_syn)
         _patch_keyword_success(mock_bd_kw)
         _patch_graph_walk_fail(mock_bd_gw)
         _mock_youtube(mock_yt)
         _mock_store(mock_store)
-        _mock_store(mock_store_syn)
         mock_get_conn.return_value = MagicMock()
 
         final = await run_pipeline(

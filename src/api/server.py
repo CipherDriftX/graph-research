@@ -178,7 +178,6 @@ def _load_checkpoint(thread_id: str) -> dict[str, Any] | None:
         "novelty_rates": values.get("novelty_rates", []),
         "saturated_branches": values.get("saturated_branches", []),
         "errors": values.get("errors", []),
-        "final_report": values.get("final_report"),
         "schema_version": values.get("schema_version"),
         "discovered_channel_count": len(values.get("discovered_channel_ids", [])),
         "discovered_video_count": len(values.get("discovered_video_ids", [])),
@@ -189,52 +188,6 @@ def _load_checkpoint(thread_id: str) -> dict[str, Any] | None:
             - (values.get("keyword_channel_ids", set()) or set())
         ),
     }
-
-
-@app.get("/api/reports")
-def api_list_reports() -> list[dict[str, Any]]:
-    """Every finished report across all runs — the console's report library.
-
-    A report only exists once a run reaches synthesize, so this is strictly a
-    subset of /api/runs; runs still in progress or that never produced one
-    (errored out, saturated with nothing found) are simply absent here rather
-    than showing up as an empty/broken card.
-    """
-    reports: list[dict[str, Any]] = []
-    for run in runs_mod.list_runs():
-        thread_id = run.get("thread_id")
-        if not thread_id:
-            continue
-        try:
-            state = _load_checkpoint(thread_id)
-        except Exception:
-            continue
-        report = state.get("final_report") if state else None
-        if not report:
-            continue
-
-        findings = report.get("findings", [])
-        grade_counts = {"strong": 0, "moderate": 0, "weak": 0}
-        for finding in findings:
-            grade = finding.get("grade")
-            if grade in grade_counts:
-                grade_counts[grade] += 1
-
-        reports.append(
-            {
-                "run_id": run["run_id"],
-                "niche": report.get("niche", ""),
-                "generated_at": report.get("generated_at"),
-                "summary": report.get("summary", ""),
-                "finding_count": len(findings),
-                "grade_counts": grade_counts,
-                "cannot_determine_count": len(report.get("cannot_determine", [])),
-                "discovery_stats": report.get("discovery_stats", {}),
-            }
-        )
-
-    reports.sort(key=lambda r: r.get("generated_at") or "", reverse=True)
-    return reports
 
 
 @app.get("/api/runs/{run_id}/logs")

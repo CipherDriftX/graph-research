@@ -97,7 +97,6 @@ def _patch_llm_nodes():
     return (
         patch("src.nodes.taxonomy.complete_tier"),
         patch("src.nodes.compact_branch.complete_tier"),
-        patch("src.nodes.synthesize.complete_tier"),
     )
 
 
@@ -202,7 +201,6 @@ async def test_end_to_end_run_completes():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        patch("src.nodes.synthesize.complete_tier") as mock_syn,
         # v3 added three more LLM-calling nodes to the graph
         # (classify_channel,
         # extract_success_failure_factors) but this file's mocks were never
@@ -236,11 +234,9 @@ async def test_end_to_end_run_completes():
         _v4_nodes_isolated(),
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
-        patch("src.nodes.synthesize.get_store") as mock_store_syn,
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
-        _mock_llm_tier(mock_syn)
         _mock_llm_tier(mock_classify)
         _mock_llm_tier(mock_factors)
         _mock_llm_tier(mock_describe)
@@ -253,7 +249,6 @@ async def test_end_to_end_run_completes():
         store.get_channels_for_node = AsyncMock(return_value=[])
         store.get_videos_for_channels = AsyncMock(return_value=[])
         mock_store.return_value = store
-        mock_store_syn.return_value = store
 
         final = await run_pipeline(
             candidate_niches=["test_niche"],
@@ -262,10 +257,7 @@ async def test_end_to_end_run_completes():
         )
 
     assert final.get("selected_niche") == "test_niche"
-    # v3 is dataset-first: synthesize()/final_report were retired by
-    # ADR-0008 in favor of finalize_dataset writing deterministic rollups
-    # straight to the store. A completed run is proven by finalize_dataset
-    # actually firing at the end of the graph, not by a report payload.
+    # A completed run is one where finalize_dataset fired at the end of the graph.
     node_names = {log.get("node_name") for log in final.get("node_logs", [])}
     assert "finalize_dataset" in node_names
 
@@ -275,7 +267,6 @@ async def test_graph_terminates_with_budget_breaker():
     with (
         patch("src.nodes.taxonomy.complete_tier") as mock_tax,
         patch("src.nodes.compact_branch.complete_tier") as mock_comp,
-        patch("src.nodes.synthesize.complete_tier") as mock_syn,
         # v3 added three more LLM-calling nodes to the graph
         # (classify_channel,
         # extract_success_failure_factors) but this file's mocks were never
@@ -309,11 +300,9 @@ async def test_graph_terminates_with_budget_breaker():
         _v4_nodes_isolated(),
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
-        patch("src.nodes.synthesize.get_store") as mock_store_syn,
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
-        _mock_llm_tier(mock_syn)
         _mock_llm_tier(mock_classify)
         _mock_llm_tier(mock_factors)
         _mock_llm_tier(mock_describe)
@@ -326,7 +315,6 @@ async def test_graph_terminates_with_budget_breaker():
         store.get_channels_for_node = AsyncMock(return_value=[])
         store.get_videos_for_channels = AsyncMock(return_value=[])
         mock_store.return_value = store
-        mock_store_syn.return_value = store
 
         final = await run_pipeline(
             candidate_niches=["test_niche"],

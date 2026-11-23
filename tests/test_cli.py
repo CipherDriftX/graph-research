@@ -106,7 +106,7 @@ class TestExportUsesTheActualRunId:
         with patch("src.cli.ensure_schema"), \
              patch("src.cli.get_async_checkpointer", new=AsyncMock(return_value=None)), \
              patch("src.cli.run_pipeline", new=AsyncMock(
-                 return_value={"run_id": "run-fresh123", "final_report": {}}
+                 return_value={"run_id": "run-fresh123"}
              )), \
              patch("src.export.export_run") as export_run, \
              patch("src.cli.close_async_pool", new=AsyncMock()), \
@@ -129,7 +129,7 @@ class TestExportUsesTheActualRunId:
              patch("src.cli.run_pipeline", new=AsyncMock(
                  # The pipeline returns the ORIGINAL checkpointed run_id —
                  # never the fresh one _run() generated for this invocation.
-                 return_value={"run_id": "run-ORIGINAL", "final_report": {}}
+                 return_value={"run_id": "run-ORIGINAL"}
              )), \
              patch("src.export.export_run") as export_run, \
              patch("src.cli.close_async_pool", new=AsyncMock()), \
@@ -150,7 +150,7 @@ class TestExportUsesTheActualRunId:
 
         with patch("src.cli.ensure_schema"), \
              patch("src.cli.get_async_checkpointer", new=AsyncMock(return_value=None)), \
-             patch("src.cli.run_pipeline", new=AsyncMock(return_value={"final_report": {}})), \
+             patch("src.cli.run_pipeline", new=AsyncMock(return_value={})), \
              patch("src.export.export_run") as export_run, \
              patch("src.cli.close_async_pool", new=AsyncMock()), \
              patch("src.cli.close_pools"), \
