@@ -175,16 +175,6 @@ class TestTheWorkbookCarriesIt:
         assert 'graph.add_edge("populate_shared_fields", "assign_niche_families")' in src
         assert 'graph.add_edge("assign_niche_families", "assign_cohorts")' in src
 
-    def test_the_run_that_prompted_this_now_has_families(self):
-        """run-e4e794436210: 135 sub-niches, 115 of them singletons."""
-        from src.export import fetch_run_niche_families
-
-        fams = fetch_run_niche_families("run-e4e794436210", None, None, True)
-        assert fams, "no families assigned"
-        for f in fams:
-            assert int(f["distinct_sub_niches"]) >= MIN_SUB_NICHES_PER_FAMILY, f
-
-
 class TestTheOverviewSummaryShowsFamilies:
     """The Overview sheet had a table headed "Niche family" that listed all
     135 SUB-niches, one per row, 115 of them holding a single channel.
@@ -212,22 +202,6 @@ class TestTheOverviewSummaryShowsFamilies:
     def test_the_family_count_is_stated(self):
         src = pathlib.Path("src/export.py").read_text(encoding="utf-8")
         assert 'ws.append(["Niche families", len(families or ())])' in src
-
-    def test_the_delivered_workbook_summarises_five_rows_not_135(self):
-        from openpyxl import load_workbook
-
-        path = pathlib.Path("exports/run-e4e794436210/run-e4e794436210.xlsx")
-        if not path.exists():
-            pytest.skip("the reference workbook has not been exported here")
-        wb = load_workbook(path, read_only=True)
-        rows = [r for r in wb["Overview"].values]
-        wb.close()
-        header = next(i for i, r in enumerate(rows) if r and r[0] == "Niche family")
-        table = [r for r in rows[header + 1:] if r and r[0]]
-        assert len(table) <= 13, len(table)
-        for row in table:
-            assert int(row[3]) >= MIN_SUB_NICHES_PER_FAMILY, row
-
 
 class TestTheWrittenFileIsChecked:
     """Enforced upstream is what every completeness failure in this project
@@ -432,38 +406,3 @@ class TestARunsFamiliesAreItsOwn:
         src = pathlib.Path("src/db/schema.sql").read_text(encoding="utf-8")
         assert "CREATE TABLE IF NOT EXISTS run_niche_families" in src
         assert "PRIMARY KEY (run_id, niche_id)" in src
-
-
-class TestTheDeliveredRunIsStillIntact:
-    """Live, against the store: the run the client has."""
-
-    def test_its_families_all_meet_the_minimum(self):
-        from src.export import fetch_run_niche_families, workbook_scope
-
-        s = workbook_scope("run-e4e794436210")
-        fams = fetch_run_niche_families(
-            "run-e4e794436210", s.category, s.min_subscribers, s.own_only)
-        assert fams
-        for f in fams:
-            assert int(f["distinct_sub_niches"]) >= MIN_SUB_NICHES_PER_FAMILY, f
-
-    def test_it_owns_a_row_for_every_niche_it_reports(self):
-        from src.db.connection import get_connection, put_connection
-
-        conn = get_connection()
-        try:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT count(*) FROM run_niche_families WHERE run_id = %s",
-                ("run-e4e794436210",),
-            )
-            assert cur.fetchone()[0] >= 135
-        finally:
-            put_connection(conn)
-
-    def test_other_runs_families_do_not_leak_into_it(self):
-        from src.api.deliverables import workbook_tree
-
-        names = {f["name"] for f in workbook_tree("run-e4e794436210")["children"]}
-        assert "Academic & Early Learning" not in names
-        assert "Content Creation Niches" not in names

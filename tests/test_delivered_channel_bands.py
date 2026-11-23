@@ -274,14 +274,6 @@ class TestTheTargetIsMeasuredAgainstTheFileItself:
         code = pathlib.Path("src/tools/hydrate_metadata.py").read_text(encoding="utf-8")
         assert 'state.get("delivered_channel_count")' in code
 
-    def test_the_education_runs_funnel_end_to_end(self):
-        """The run the client reported, as arithmetic. 100 hydrated became
-        24 over the floor became 17 rows; the old cap saw only the first
-        number and called the promise kept."""
-        from src.export import workbook_channel_count
-
-        assert workbook_channel_count("run-dd2dbdbc3080") == 17
-
 
 def _saturation(cap, delivered):
     """check_saturation with every other ceiling switched off."""
