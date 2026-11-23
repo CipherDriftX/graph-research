@@ -1,0 +1,121 @@
+"""Cohorts must be assignable in both verticals, and mean something.
+
+The client brief asks for 30-40 underperforming/failed channels per
+vertical to correct survivor bias. The shipped implementation produced
+exactly ONE across the whole database, for three compounding reasons:
+
+  * `underperformer` was decided inside `if vertical == "crime"`, so
+    Finance could not produce one at all;
+  * the test was absolute -- `eng < 20 and subs < 100000` -- which above a
+    50k subscriber floor describes a sliver of one size band, and says
+    nothing about performance "relative to their niche/size" as asked;
+  * a settled, non-breakout Finance channel fell through to `None` and got
+    no cohort whatsoever (189 of 193 in the deliverable).
+"""
+
+from __future__ import annotations
+
+import inspect
+
+import src.nodes.assign_cohorts as mod
+
+
+class TestUnderperformerIsVerticalAgnostic:
+    def test_underperformer_is_decided_before_the_vertical_branch(self):
+        src = inspect.getsource(mod.assign_cohorts)
+        under = src.index('cohort_code = "underperformer"')
+        crime_branch = src.index('elif vertical == "crime"')
+        assert under < crime_branch, (
+            "underperformer must be decided before the per-vertical branches, "
+            "or one vertical can never produce one"
+        )
+
+    def test_finance_never_falls_through_without_a_cohort(self):
+        src = inspect.getsource(mod.assign_cohorts)
+        finance = src[src.index('elif vertical == "finance"'):]
+        finance = finance[: finance.index("if cohort_code:")]
+        assert '"market_benchmark"' in finance, (
+            "an established, non-breakout Finance channel must still get a "
+            "cohort rather than None"
+        )
+
+
+class TestUnderperformanceIsRelativeAndTimeAware:
+    def test_peer_floor_ignores_thin_buckets(self):
+        """No peer evidence must not read as evidence of failure."""
+        src = inspect.getsource(mod._peer_engagement_floors)
+        assert "n >= 8" in src, "a bucket needs enough members for a quartile"
+        assert "PERCENTILE_CONT" in src, "the floor must be a peer percentile"
+
+    def test_stagnation_and_abandonment_are_considered(self):
+        src = inspect.getsource(mod.assign_cohorts)
+        for token in ("abandoned", "stagnant", "below_peers"):
+            assert token in src, f"{token} must feed the underperformer test"
+
+    def test_a_winner_is_never_an_underperformer(self):
+        """Asserted on the assignment's shape, not its exact formatting.
+
+        The first version of this matched a literal source line and broke
+        the moment the expression was wrapped over several lines, while the
+        behaviour it guards was untouched.
+        """
+        src = inspect.getsource(mod.assign_cohorts)
+        expr = src[src.index("is_under = "):]
+        expr = expr[: expr.index("\n\n")]
+        assert "not is_winner" in expr, (
+            "a high-engagement or very large channel must not be labelled "
+            "an underperformer merely for a quiet six months"
+        )
+
+    def test_underperformer_requires_a_real_track_record(self):
+        """The brief: at least 30-50 videos, active for months or years."""
+        src = inspect.getsource(mod.assign_cohorts)
+        assert "has_track_record" in src
+        assert ">= 30" in src, "a channel with three uploads is missing data, not failing"
+        assert "history_span_days" in src
+
+
+class TestEligibilityTerminates:
+    """Nothing eligible in SQL may be skipped in Python.
+
+    A skipped-but-eligible row refills the LIMIT 200 window every round and
+    the backfill stalls -- observed at 48 assignments with 300 candidates
+    still outstanding. This used to be held by listing the two verticals in
+    SQL, which also meant a run on any other topic assigned no cohorts at
+    all. The invariant is the point; the vertical list was one way to get
+    it, and the wrong one.
+    """
+
+    def test_the_only_python_skip_is_excluded_in_sql(self):
+        src = inspect.getsource(mod.assign_cohorts)
+        # The loop's sole `continue` is for a channel with no vertical...
+        assert "if not vertical:" in src
+        # ...and SQL excludes exactly that.
+        assert "parent_category IS NOT NULL" in src, (
+            "channels skipped in Python but left eligible in SQL refill the "
+            "LIMIT window every round and stall the backfill"
+        )
+
+    def test_no_vertical_is_hardcoded_into_eligibility(self):
+        """A client can research any topic; cohorts must not be reserved
+        for the two verticals that happened to ship first."""
+        src = inspect.getsource(mod.assign_cohorts)
+        assert "parent_category IN (" not in src
+
+    def test_an_unlisted_vertical_still_gets_a_cohort(self):
+        """The signals are vertical-agnostic, so the generic branch exists
+        rather than falling through to `continue`."""
+        src = inspect.getsource(mod.assign_cohorts)
+        assert "generic_group" in src
+        assert 'f"{vertical}_lifecycle"' in src, (
+            "a third vertical needs its own exclusive group, or its cohorts "
+            "are made mutually exclusive against crime's"
+        )
+
+    def test_already_assigned_is_checked_against_the_right_vertical(self):
+        src = inspect.getsource(mod.assign_cohorts)
+        assert "cc.vertical = nt.parent_category" in src
+        assert "cc.vertical = 'crime'" not in src, (
+            "a hardcoded vertical makes every Finance channel look unassigned "
+            "forever"
+        )
