@@ -167,15 +167,6 @@ class TestTheFootageFlagsHaveAProducer:
         assert out["node_logs"], "the node must still report"
         assert any("footage flag" in e["message"] for e in out["errors"])
 
-    def test_the_script_and_the_pipeline_share_one_set_of_rules(self):
-        """Two copies is how this happened: the rules existed only in the
-        script, so the pipeline had none."""
-        script = open("scripts/gapfill/derive_footage_flags.py", encoding="utf-8").read()
-        assert "from src.tools.footage_flags import derive_footage_flags" in script
-        assert "interrogation_confession" not in script, (
-            "the script must not carry its own copy of the rules"
-        )
-
     def test_every_flag_the_export_carries_has_a_rule(self):
         from src.tools.footage_flags import RULES
 

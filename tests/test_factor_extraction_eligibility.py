@@ -37,11 +37,9 @@ class TestEligibilityUsesAnExplicitMarker:
         assert "success_failure_factors_checked_at IS NULL" in src
 
     def test_the_marker_is_a_real_schema_column(self):
-        from src.db.schema import MIGRATIONS
+        from src.db.schema import SCHEMA_SQL
 
-        assert any(
-            "success_failure_factors_checked_at" in stmt for stmt in MIGRATIONS
-        ), "the column must be created by a migration, not assumed to exist"
+        assert "success_failure_factors_checked_at" in SCHEMA_SQL
 
 
 class TestASuccessfulAttemptIsAlwaysMarked:

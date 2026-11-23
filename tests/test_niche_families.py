@@ -429,7 +429,7 @@ class TestARunsFamiliesAreItsOwn:
         assert 'niche.get("current_group_id")' in body
 
     def test_the_table_is_keyed_on_the_pair(self):
-        src = pathlib.Path("src/db/schema.py").read_text(encoding="utf-8")
+        src = pathlib.Path("src/db/schema.sql").read_text(encoding="utf-8")
         assert "CREATE TABLE IF NOT EXISTS run_niche_families" in src
         assert "PRIMARY KEY (run_id, niche_id)" in src
 
