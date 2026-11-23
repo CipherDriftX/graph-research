@@ -13,7 +13,7 @@ from openai.types.chat.chat_completion import Choice
 from openai.types.completion_usage import CompletionUsage
 
 from src.llm.cascade import complete_tier, estimate_cost, get_model_for_tier
-from src.llm.client import OPENROUTER_MODEL_SLUGS, LLMClient, get_client
+from src.llm.client import MODEL_PRICING, OPENROUTER_MODEL_SLUGS, LLMClient, get_client
 
 
 def _mock_openrouter_config():
@@ -21,6 +21,11 @@ def _mock_openrouter_config():
     mock_cfg.openrouter.api_key = "sk-test"
     mock_cfg.openrouter.base_url = "https://openrouter.ai/api/v1"
     return mock_cfg
+
+
+def _per_million(model: str) -> float:
+    """Cost of one million input plus one million output tokens."""
+    return MODEL_PRICING[model]["input"] + MODEL_PRICING[model]["output"]
 
 
 def _fake_completion(content: str, prompt_tokens: int = 100, completion_tokens: int = 50) -> ChatCompletion:
@@ -143,7 +148,7 @@ class TestLLMClientComplete:
         with patch.object(client._get_client().chat.completions, "create", return_value=fake):
             result = client.complete(prompt="test", model="deepseek-v4-pro")
 
-        assert result["cost_usd"] == pytest.approx(0.44 + 0.87)
+        assert result["cost_usd"] == pytest.approx(_per_million("deepseek-v4-pro"))
 
     @patch("src.llm.client.get_config")
     def test_pricing_deepseek_v4_flash(self, mock_get_config):
@@ -156,7 +161,7 @@ class TestLLMClientComplete:
         with patch.object(client._get_client().chat.completions, "create", return_value=fake):
             result = client.complete(prompt="test", model="deepseek-v4-flash")
 
-        assert result["cost_usd"] == pytest.approx(0.14 + 0.28)
+        assert result["cost_usd"] == pytest.approx(_per_million("deepseek-v4-flash"))
 
     @patch("src.llm.client.get_config")
     def test_pricing_kimi_k3(self, mock_get_config):
@@ -169,7 +174,7 @@ class TestLLMClientComplete:
         with patch.object(client._get_client().chat.completions, "create", return_value=fake):
             result = client.complete(prompt="test", model="kimi-k3")
 
-        assert result["cost_usd"] == pytest.approx(3.00 + 15.00)
+        assert result["cost_usd"] == pytest.approx(_per_million("kimi-k3"))
 
     @patch("src.llm.client.get_config")
     def test_pricing_kimi_k2_6(self, mock_get_config):
@@ -182,7 +187,7 @@ class TestLLMClientComplete:
         with patch.object(client._get_client().chat.completions, "create", return_value=fake):
             result = client.complete(prompt="test", model="kimi-k2.6")
 
-        assert result["cost_usd"] == pytest.approx(0.95 + 4.00)
+        assert result["cost_usd"] == pytest.approx(_per_million("kimi-k2.6"))
 
     @patch("src.llm.client.get_config")
     def test_unknown_model_zero_cost(self, mock_get_config):
@@ -245,7 +250,7 @@ class TestLLMClientComplete:
 
         client.complete(prompt="test", model="deepseek-v4-pro", thinking=True)
 
-        assert mock_create.call_args.kwargs.get("extra_body") == {"thinking": {"type": "enabled"}}
+        assert mock_create.call_args.kwargs["extra_body"]["thinking"] == {"type": "enabled"}
 
     @patch("src.llm.client.get_config")
     def test_thinking_not_sent_for_cheap_model(self, mock_get_config):
@@ -259,7 +264,7 @@ class TestLLMClientComplete:
 
         client.complete(prompt="test", model="deepseek-v4-flash", thinking=True)
 
-        assert "extra_body" not in mock_create.call_args.kwargs
+        assert "thinking" not in mock_create.call_args.kwargs["extra_body"]
 
     @patch("src.llm.client.get_config")
     def test_uses_openrouter_credentials(self, mock_get_config):
@@ -580,19 +585,19 @@ class TestCompleteTier:
 class TestEstimateCost:
     def test_frontier_1m_tokens(self):
         cost = estimate_cost("frontier", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(0.44 + 0.87)
+        assert cost == pytest.approx(_per_million("deepseek-v4-pro"))
 
     def test_cheap_1m_tokens(self):
         cost = estimate_cost("cheap", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(0.14 + 0.28)
+        assert cost == pytest.approx(_per_million("deepseek-v4-flash"))
 
     def test_cross_judge_1m_tokens(self):
         cost = estimate_cost("cross_judge", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(3.00 + 15.00)
+        assert cost == pytest.approx(_per_million("kimi-k3"))
 
     def test_thumbnail_vision_1m_tokens(self):
         cost = estimate_cost("thumbnail_vision", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(0.95 + 4.00)
+        assert cost == pytest.approx(_per_million("kimi-k2.6"))
 
     def test_zero_tokens(self):
         cost = estimate_cost("frontier", prompt_tokens=0, completion_tokens=0)
@@ -600,7 +605,8 @@ class TestEstimateCost:
 
     def test_small_fractional(self):
         cost = estimate_cost("cheap", prompt_tokens=1000, completion_tokens=500)
-        expected = (1000 / 1_000_000 * 0.14) + (500 / 1_000_000 * 0.28)
+        price = MODEL_PRICING["deepseek-v4-flash"]
+        expected = (1000 / 1_000_000 * price["input"]) + (500 / 1_000_000 * price["output"])
         assert cost == pytest.approx(expected)
 
     def test_unknown_tier_raises(self):
@@ -652,7 +658,7 @@ class TestThinkingToggle:
 
             client.complete(prompt="test", model=model, thinking=True)
 
-            has_thinking = "extra_body" in mock_create.call_args.kwargs
+            has_thinking = "thinking" in mock_create.call_args.kwargs["extra_body"]
             assert has_thinking is should_have_thinking, f"Model {model}: expected thinking={should_have_thinking}, got {has_thinking}"
 
     @patch("src.llm.client.get_config")
@@ -667,7 +673,7 @@ class TestThinkingToggle:
 
         client.complete(prompt="test", model="deepseek-v4-pro", thinking=False)
 
-        assert "extra_body" not in mock_create.call_args.kwargs
+        assert "thinking" not in mock_create.call_args.kwargs["extra_body"]
 
 class TestEmptyCompletionIsRetried:
     """A provider that answers with nothing cost the technology run a whole
@@ -731,3 +737,28 @@ class TestEmptyCompletionIsRetried:
 
         result = client.complete(prompt="p", model="deepseek-v4-flash")
         assert result["finish_reason"] == "length"
+
+
+class TestReportedCost:
+    @patch("src.llm.client.get_config")
+    def test_the_cost_openrouter_reports_wins_over_the_table(self, mock_get_config):
+        mock_get_config.return_value = _mock_openrouter_config()
+        client = LLMClient()
+        fake = _fake_completion("ok", prompt_tokens=1_000_000, completion_tokens=1_000_000)
+        fake.usage.cost = 0.0123
+
+        with patch.object(client._get_client().chat.completions, "create", return_value=fake):
+            result = client.complete(prompt="test", model="deepseek-v4-pro")
+
+        assert result["cost_usd"] == pytest.approx(0.0123)
+
+    @patch("src.llm.client.get_config")
+    def test_every_request_asks_for_the_billed_cost(self, mock_get_config):
+        mock_get_config.return_value = _mock_openrouter_config()
+        client = LLMClient()
+        mock_create = MagicMock(return_value=_fake_completion("ok"))
+        client._get_client().chat.completions.create = mock_create
+
+        client.complete(prompt="test", model="deepseek-v4-flash")
+
+        assert mock_create.call_args.kwargs["extra_body"]["usage"] == {"include": True}

@@ -1,10 +1,8 @@
-"""Unified LLM client — DeepSeek and Kimi models, accessed via OpenRouter.
+"""LLM client for DeepSeek and Kimi models through OpenRouter.
 
-Both model families go through one OpenAI-compatible endpoint and one API
-key (ADR-0005), instead of two direct vendor integrations. Internal model
-identifiers (below, and throughout state/cost-tracking/tests) are unchanged
-by this — OPENROUTER_MODEL_SLUGS is the one place that translates them to
-whatever OpenRouter's own catalog calls them for the actual API call.
+Both model families go through one OpenAI-compatible endpoint and one key.
+The rest of the code uses the short model names below; OPENROUTER_MODEL_SLUGS
+maps them to OpenRouter's catalog ids.
 """
 
 from __future__ import annotations
@@ -26,18 +24,15 @@ from src.config import get_config
 
 logger = structlog.get_logger(__name__)
 
+# USD per million tokens, from OpenRouter's GET /api/v1/models (2026-11-23).
+# Used when a response does not report its own cost.
 MODEL_PRICING: dict[str, dict[str, float]] = {
-    "deepseek-v4-pro": {"input": 0.44, "output": 0.87},
-    "deepseek-v4-flash": {"input": 0.14, "output": 0.28},
-    "kimi-k3": {"input": 3.00, "output": 15.00},
-    "kimi-k2.6": {"input": 0.95, "output": 4.00},
+    "deepseek-v4-pro": {"input": 0.90, "output": 1.50},
+    "deepseek-v4-flash": {"input": 0.09, "output": 0.18},
+    "kimi-k3": {"input": 0.192, "output": 16.00},
+    "kimi-k2.6": {"input": 0.65, "output": 3.41},
 }
 
-# OpenRouter addresses models as "<upstream-provider>/<model-slug>". Verified
-# 2026-08-13 against GET /api/v1/models on the live OpenRouter catalog — all
-# four exist exactly as below. Nothing else in the codebase needs to change
-# if these ever drift, since every other reference (pricing, cost tracking,
-# state, tests) uses the internal name on the left.
 OPENROUTER_MODEL_SLUGS: dict[str, str] = {
     "deepseek-v4-pro": "deepseek/deepseek-v4-pro",
     "deepseek-v4-flash": "deepseek/deepseek-v4-flash",
@@ -109,8 +104,8 @@ class LLMClient:
                 api_key=self._config.openrouter.api_key,
                 base_url=self._config.openrouter.base_url,
                 default_headers={
-                    "HTTP-Referer": "https://github.com/AP-Common-Projects/research-agentic-system",
-                    "X-Title": "YouTube Niche-Research Harness",
+                    "HTTP-Referer": "https://github.com/CipherDriftX/graph-research",
+                    "X-Title": "graph-research",
                 },
             )
         return self._client
@@ -147,7 +142,11 @@ class LLMClient:
             )
         prompt_tokens = response.usage.prompt_tokens if response.usage else 0
         completion_tokens = response.usage.completion_tokens if response.usage else 0
-        cost = self._calculate_cost(model, prompt_tokens, completion_tokens)
+        reported = getattr(response.usage, "cost", None) if response.usage else None
+        cost = (
+            float(reported) if isinstance(reported, (int, float))
+            else self._calculate_cost(model, prompt_tokens, completion_tokens)
+        )
 
         return {
             "content": content,
@@ -176,9 +175,11 @@ class LLMClient:
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
+            # Ask OpenRouter to report the billed cost with the usage counts.
+            "extra_body": {"usage": {"include": True}},
         }
         if thinking and model.startswith("deepseek-v4-pro"):
-            kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
+            kwargs["extra_body"]["thinking"] = {"type": "enabled"}
         response = client.chat.completions.create(**kwargs)
         self._raise_if_blank(response, model)
         return response
