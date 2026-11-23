@@ -1986,13 +1986,14 @@ def build_excel_workbook_v3(
     failure_factors: list[dict[str, Any]],
     families: list[dict[str, Any]] | None = None,
 ):
-    """The deliverable: one workbook, eight sheets, nothing narrative.
+    """The deliverable: one workbook, up to eight sheets, nothing narrative.
 
-    Overview (run stats + category/niche rollup), Channels (every
-    enrichment column), Videos and Shorts (long-form and Shorts kept apart), Niches (category/sub-niche breakdown), Success
-    Factors, Failure Factors — each a filterable/sortable table a
-    non-technical owner can explore directly, and a flat enough shape to
-    pivot or chart later.
+    Overview (run stats and category/niche rollup), Channels (every
+    enrichment column), Videos and Shorts (long-form and Shorts kept apart),
+    Niche Families (when the run built any), Niches (category/sub-niche
+    breakdown), Success Factors and Failure Factors. Each is a filterable,
+    sortable table a non-technical owner can explore directly, flat enough
+    to pivot or chart.
     """
     from openpyxl import Workbook
     from openpyxl.styles import Font
