@@ -48,7 +48,7 @@ def _fetch(sql: str, params: tuple) -> list[dict[str, Any]]:
         try:
             cur.execute(sql, params)
             cols = [d[0] for d in cur.description]
-            return [dict(zip(cols, row)) for row in cur.fetchall()]
+            return [dict(zip(cols, row, strict=True)) for row in cur.fetchall()]
         finally:
             cur.close()
     finally:
@@ -758,94 +758,6 @@ def _clean_title(title: str | None) -> str:
     raw, one breaks a markdown list item into a stray blank line and a
     dangling continuation. Collapse to a single line."""
     return " ".join((title or "").split())
-
-
-def _report_markdown(
-    report: dict[str, Any],
-    manifest: dict[str, Any],
-    channels: list[dict],
-    branch_counts: dict[str, dict[str, int]] | None = None,
-    tree: dict[str, dict] | None = None,
-) -> str:
-    """A brief for the team deciding what to make — statistics, findings,
-    what to do, what to avoid, top channels. Nothing about how the run was
-    conducted, what it stopped on, or which channels the pipeline is less
-    sure about: that provenance detail lives in manifest.json and
-    channels.csv's low_confidence_reasons column for anyone who wants it,
-    not in the document a content strategist reads.
-    """
-    grade_order = {"strong": 0, "moderate": 1, "weak": 2}
-    findings = sorted(
-        report.get("findings", []),
-        key=lambda f: grade_order.get(f.get("grade", "weak"), 3),
-    )
-    niche = report.get("niche") or manifest.get("niche") or "Untitled"
-
-    lines = [
-        f"# {niche} — research report",
-        "",
-        f"{manifest['channels']:,} channels and {manifest['videos']:,} videos analyzed "
-        f"across {manifest.get('sub_niches_covered', 0)} sub-niches.",
-        "",
-        "## Overview",
-        "",
-        "| Sub-niche | Channels | Videos |",
-        "|---|---:|---:|",
-    ]
-    tree = tree or {}
-    branch_counts = branch_counts or {}
-    rows = sorted(
-        (
-            (n.get("label") or nid, n.get("depth", 0), branch_counts.get(nid, {}))
-            for nid, n in tree.items()
-            if branch_counts.get(nid, {}).get("channels")
-        ),
-        key=lambda r: (r[1], -r[2].get("channels", 0)),
-    )
-    for label, _depth, counts in rows:
-        lines.append(f"| {label} | {counts.get('channels', 0):,} | {counts.get('videos', 0):,} |")
-    lines.append("")
-
-    lines += ["## Summary", "", report.get("summary", "_No summary._"), "", "## Findings", ""]
-    for finding in findings:
-        lines.append(f"### [{finding.get('grade', '?').upper()}] {finding.get('claim', '')}")
-        supporting = finding.get("supporting_channel_ids", [])
-        if supporting:
-            by_id = {c["channel_id"]: _clean_title(c.get("title")) or c["channel_id"] for c in channels}
-            named = [by_id.get(cid, cid) for cid in supporting[:6]]
-            lines.append(f"Channels: {', '.join(named)}")
-        lines.append("")
-
-    recs = report.get("recommendations", {}) or {}
-    do_items = recs.get("do", [])
-    avoid_items = recs.get("avoid", [])
-    if do_items:
-        lines += ["## What to do", ""]
-        lines += [f"- {item}" for item in do_items]
-        lines.append("")
-    if avoid_items:
-        lines += ["## What to avoid", ""]
-        lines += [f"- {item}" for item in avoid_items]
-        lines.append("")
-
-    lines += [
-        "## Top channels by audience",
-        "",
-        "| Channel | Subscribers | Found by | Engagement | Uploads/30d |",
-        "|---|---:|---|---:|---:|",
-    ]
-    for ch in channels[:20]:
-        eng = ch.get("engagement_rate")
-        cad = ch.get("cadence")
-        lines.append(
-            f"| {_clean_title(ch.get('title')) or ch['channel_id']} "
-            f"| {ch.get('subscriber_count') or 0:,} "
-            f"| {ch.get('discovery_method', '?')} "
-            f"| {eng if eng is not None else '—'} "
-            f"| {cad if cad is not None else '—'} |"
-        )
-    lines.append("")
-    return "\n".join(lines)
 
 
 _GRAPH_HTML_TEMPLATE = r"""<!doctype html>
@@ -1757,11 +1669,6 @@ def export_run(run_id: str, thread_id: str | None = None) -> Path:
         ),
         encoding="utf-8",
     )
-    if report:
-        (out / "report.md").write_text(
-            _report_markdown(report, manifest, channels, branch_counts, tree),
-            encoding="utf-8",
-        )
 
     logger.info(
         "run_exported", run_id=run_id, path=str(out),
@@ -2486,7 +2393,6 @@ def export_excel(
     scope = workbook_scope(run_id, category, all_categories, all_channels, cap_videos)
     category = scope.category
     min_subscribers = scope.min_subscribers
-    video_limit = scope.video_limit
     own_only = scope.own_only
 
     channels, videos = workbook_rows(run_id, scope)
