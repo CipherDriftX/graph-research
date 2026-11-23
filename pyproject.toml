@@ -33,7 +33,7 @@ dev = [
     "pre-commit>=3.8.0",
 ]
 mcp = [
-    "mcp>=1.0.0",
+    "mcp>=2.0,<3",
 ]
 console = [
     "fastapi>=0.115.0",
@@ -42,7 +42,6 @@ console = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
 addopts = "-v --tb=short -p no:cacheprovider"
 
 [tool.setuptools.packages.find]
