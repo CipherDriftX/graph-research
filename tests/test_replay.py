@@ -29,7 +29,7 @@ import src.config as config_module
 from src.graph import run_pipeline
 from src.tools.bright_data import BrightDataClient
 
-FIXTURES = Path("tests/fixtures/brightdata")
+FIXTURES = Path("fixtures/brightdata")
 
 TAXONOMY_JSON = json.dumps({
     "nodes": [

@@ -98,7 +98,7 @@ class BrightDataConfig(BaseSettings):
     comments_dataset_id: str = "gd_lk9q0ew71spt1mxywf"
 
     mode: Literal["live", "replay"] = "live"
-    fixtures_dir: str = "tests/fixtures/brightdata"
+    fixtures_dir: str = "fixtures/brightdata"
 
     # Discovery jobs run for minutes, not seconds — measured 2026-08-13, a
     # keyword discovery on the Channels collector took ~6min and one on the
