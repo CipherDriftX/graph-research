@@ -371,7 +371,7 @@ class TestDistinctnessIsAMeasurementNotASentinel:
     external edges, returning ~110 — an arbitrary number that looks like a
     measurement and passes any threshold. Measured live, EVERY retained
     candidate scored exactly 110.0, so min_cluster_distinctness filtered
-    nothing and ADR-0007's evidence-gated depth was ungated."""
+    nothing and the evidence-gated depth was ungated."""
 
     @staticmethod
     def _two_triangles(bridge_weight=1.0, bridged=True):

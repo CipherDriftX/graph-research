@@ -344,7 +344,7 @@ def hydrate_metadata(state: dict) -> dict:
 
     # Per-track attribution, not a flat label. "graph_walk" here means the
     # keyword track never returned this channel — those are exactly the
-    # channels the project exists to find (master plan §1), so the label has
+    # channels the project exists to find, so the label has
     # to be earned, never assumed.
     kw_found = set(state.get("keyword_channel_ids", set()))
     gw_found = set(state.get("graph_walk_channel_ids", set()))

@@ -1,6 +1,6 @@
 """Cost governors — proof that each ceiling actually fires.
 
-These are the circuit breakers from docs/first-run-plan.md rung 02. Saturation
+These are the run's circuit breakers. Saturation
 remains the intended stop condition; these exist so that a bug in the frontier
 logic cannot spend a month's record allowance before anyone notices.
 
@@ -323,7 +323,7 @@ class TestSaturationGovernors:
         assert result["saturated_branches"] == []
 
     def test_lineage_budget_force_saturates_only_its_subtree(self):
-        # ADR-0006 rejected a global-only ceiling because one runaway branch
+        # A global-only ceiling is not enough because one runaway branch
         # starves the run. Unbounded depth reintroduces that one level up: a
         # deep chain of splits under one root branch must not starve its
         # sibling. Only the offending lineage's subtree force-saturates.

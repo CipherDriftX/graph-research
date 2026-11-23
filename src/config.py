@@ -83,8 +83,7 @@ class BrightDataConfig(BaseSettings):
     Each collector is triggered independently and billed per record.
 
     `mode` selects the live API or the recorded fixtures under `fixtures_dir`.
-    Replay mode is what lets the whole graph be exercised end to end at zero
-    record spend (see docs/first-run-plan.md, rung 03).
+    Replay mode lets the discovery steps run end to end at zero record spend.
     """
 
     api_key: str = ""
@@ -116,9 +115,8 @@ class BrightDataConfig(BaseSettings):
 
 
 class OpenRouterConfig(BaseSettings):
-    """DeepSeek and Kimi are both accessed through OpenRouter — one key, one
-    endpoint, one billing/access path, instead of two direct vendor
-    integrations (see ADR-0005)."""
+    """DeepSeek and Kimi both go through OpenRouter: one key, one endpoint,
+    one bill."""
 
     api_key: str = ""
     base_url: str = "https://openrouter.ai/api/v1"
@@ -127,7 +125,7 @@ class OpenRouterConfig(BaseSettings):
 
 
 # Cost governors, preset per profile. Saturation stays the *intended* stop
-# condition (master plan first principle #2) — these are the circuit breakers
+# condition; these are the circuit breakers
 # that keep a bug in the frontier logic from spending the month's record
 # allowance before anyone notices. A run that stops on a governor rather than
 # on saturation is a run to investigate, and check_saturation logs which it

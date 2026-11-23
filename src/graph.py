@@ -1,6 +1,6 @@
-"""graph.py — full LangGraph wiring for the v1 harness.
+"""The LangGraph wiring for the whole pipeline.
 
-Per master plan §8.2: no dead analyze_deep node. budget_exhausted force-saturates
+budget_exhausted force-saturates
 active nodes then routes to compact_branch. The keyword_search / graph_walk fan-out
 has a defined join point (hydrate_metadata) and per-branch failure behavior —
 record the error and continue, never silently proceed on partial results without

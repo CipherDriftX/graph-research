@@ -90,7 +90,7 @@ def tier_b_affordable(
 def lineage_share(budget_limit_usd: float, num_depth1_branches: int) -> float | None:
     """Per-depth-1-lineage USD share of the run budget. None means uncapped.
 
-    Generalized from ADR-0006's own rejection of a global-only ceiling: an
+    A global-only ceiling lets one runaway branch starve the run, and an
     unbounded-depth tree reintroduces the "one runaway branch starves the run"
     failure one level up — a deep chain of splits under one root branch could
     consume the whole allowance before a sibling root branch gets a fair look.

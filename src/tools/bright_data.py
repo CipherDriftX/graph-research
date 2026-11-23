@@ -242,9 +242,7 @@ def parse_video(row: dict) -> dict:
     and the other media fields the collector returns. This harness does no
     image or video processing — v1 reasons over engagement metrics and graph
     structure only. Carrying media payloads would bloat state and the compaction
-    prompts for data nothing consumes. Transcript/scene analysis stays a v2
-    concern (master plan §8.4 `analysis_results`), and the `thumbnail_vision`
-    tier in cascade.py is unused for the same reason.
+    prompts for data nothing consumes.
     """
     recommended = row.get("next_recommended_videos") or []
     return {

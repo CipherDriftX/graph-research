@@ -879,8 +879,8 @@ class TestScoreSignals:
         )
 
 class TestDiscoveryAttribution:
-    """Per-track attribution — master plan §1 requires proving the graph-walk
-    track surfaced channels the keyword track missed, which is only checkable
+    """Per-track attribution. Showing that the graph-walk track surfaced
+    channels the keyword track missed is only checkable
     if each channel records which track(s) actually found it."""
 
     def test_graph_walk_exclusive_channel_labeled_graph_walk(self):

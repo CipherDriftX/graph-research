@@ -1,7 +1,7 @@
 """HarnessState — the central typed contract for the niche-research pipeline.
 
-Every field audited per §0.2 item 1 of the master plan:
-"If two nodes write this in the same step, what should happen?"
+Every field answers one question: if two nodes write it in the same step,
+what should happen?
 
 Reducers are explicit, not assumed. Default overwrite is correct for single-writer
 fields; accumulating fields use Annotated with the right merge strategy.
@@ -262,8 +262,8 @@ class HarnessState(TypedDict, total=False):
     # Per-track discovery attribution. Kept as two independent sets rather than
     # one label per channel because a channel found by BOTH tracks must stay
     # recorded in both — collapsing to a single label loses the very comparison
-    # the project exists to make (master plan §1: the graph-walk track must
-    # demonstrably surface channels the keyword track missed). Union reducers,
+    # the project exists to make (the graph-walk track must show which
+    # channels the keyword track missed). Union reducers,
     # so the parallel fan-out writes cannot clobber each other.
     keyword_channel_ids: Annotated[set[str], _merge_set_union]
     graph_walk_channel_ids: Annotated[set[str], _merge_set_union]
@@ -433,9 +433,8 @@ def create_augmented_state(
 def migrate_state(state: dict) -> dict:
     """Run on load to migrate checkpoints from older schema versions.
 
-    Per §0.2 item 6 of the master plan: any schema or taxonomy change
-    at runtime needs a version marker + migrate function, or checkpoints
-    created before the change fail to resume.
+    Any change to the state's shape needs a version marker and a migrate
+    step, or checkpoints created before the change fail to resume.
     """
     version = state.get("schema_version", 0)
 

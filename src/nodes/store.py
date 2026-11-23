@@ -61,7 +61,7 @@ def _fetch_discovery_edges(channel_refs: list[str]) -> list[dict[str, Any]]:
     """Discovery edges whose source lies inside the given ref set.
 
     The ref set for a node is what `_kw_refs`/`_gw_refs` track (handles/URLs).
-    `target_channel_ref` is the always-present edge identity (ADR-0006);
+    `target_channel_ref` is the always-present edge identity;
     source_channel_id is the UC id, which is only present once the channel
     record has been fetched. Filtering on the *ref* column (both endpoints)
     is what makes the edge set for a node actually resolvable before and

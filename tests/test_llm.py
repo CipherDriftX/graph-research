@@ -268,8 +268,8 @@ class TestLLMClientComplete:
 
     @patch("src.llm.client.get_config")
     def test_uses_openrouter_credentials(self, mock_get_config):
-        """DeepSeek and Kimi both route through the same OpenRouter client now
-        (ADR-0005) — one key, one base_url, not per-family credentials."""
+        """DeepSeek and Kimi both route through one OpenRouter client: one
+        key, one base_url, not per-family credentials."""
         mock_cfg = MagicMock()
         mock_cfg.openrouter.api_key = "sk-or-test"
         mock_cfg.openrouter.base_url = "https://openrouter.ai/api/v1"

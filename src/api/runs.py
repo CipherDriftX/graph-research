@@ -126,9 +126,8 @@ def launch_run(
 ) -> dict[str, Any]:
     """Start a detached harness run and register it. Returns the registry entry.
 
-    Budget remains a circuit breaker rather than a per-run dial (master plan
-    §1): .env still sets the account-level ceiling and nothing here can raise
-    it. `depth` selects a named tier from src/api/depth.py, which sets the
+    Budget remains a circuit breaker rather than a per-run dial: .env sets
+    the account-level ceiling and nothing here can raise it. `depth` selects a named tier from src/api/depth.py, which sets the
     same governors PROFILES already define -- rounds, tree depth, branches,
     query breadth, record and quota budgets -- for this one run, passed as
     environment to the subprocess so the child resolves them through the

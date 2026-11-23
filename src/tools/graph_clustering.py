@@ -32,8 +32,7 @@ from src.tools.bright_data import normalize_channel_ref
 
 # Edge-type weights: featured_channel is an owner's deliberate pick (strongest
 # signal); recommendation is YouTube's algorithm; playlist is curated;
-# comment_author is passive presence. Mirrors ADR-0006's signal-strength
-# hierarchy.
+# comment_author is passive presence.
 _EDGE_WEIGHTS: dict[str, float] = {
     "featured_channel": 3.0,
     "recommendation": 2.0,
@@ -86,8 +85,8 @@ def build_similarity_graph(
     (featured_channel=3, recommendation=2, etc.). Content-similarity edges
     fill gaps for pairs with no discovery edge but overlapping video titles
     and descriptions — catches structure among small channels whose graph
-    signal is sparsest (ADR-0006 measured featured_channels present on only
-    1% of sub-100-subscriber channels).
+    signal is sparsest (featured_channels was present on only 1% of
+    sub-100-subscriber channels when measured).
     """
     G = nx.Graph()
     G.add_nodes_from(refs)
@@ -217,7 +216,7 @@ def score_distinctness(
     # 0.01 sentinel and returned ~110, an arbitrary number that looks like a
     # measurement and passes any threshold. Measured live, EVERY retained
     # candidate scored exactly 110.0, which meant min_cluster_distinctness was
-    # filtering nothing and ADR-0007's "evidence-gated" depth was ungated.
+    # filtering nothing and the "evidence-gated" depth was ungated.
     #
     # Returning infinity keeps the gate honest: a disconnected component of
     # sufficient size genuinely earns a split, and the real filter for

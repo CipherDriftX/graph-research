@@ -1,7 +1,6 @@
 """Replay mode — the whole graph, end to end, on recorded Bright Data.
 
-This is rung 03 of docs/first-run-plan.md and the highest-value test in the
-suite. It runs the real LangGraph wiring, the real routing, the real frontier
+This is the highest-value test in the suite. It runs the real LangGraph wiring, the real routing, the real frontier
 and saturation logic, and the real Bright Data client against fixtures captured
 from live collectors — at zero record spend.
 

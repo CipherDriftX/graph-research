@@ -8,7 +8,7 @@ Writes only its OWN fields to the tree node (`_gw_refs`, graph novelty history,
 exhaustion flag) so the parallel keyword_search write isn't clobbered — see the
 deep-merge reducer in state.py.
 
-Two-tier expansion (docs/first-run-plan.md rung 02):
+Two-tier expansion:
 
   Tier A — fetch the channel record and read `featured_channels`. One record
     per channel, and the edges ride along inside a record we already paid for.

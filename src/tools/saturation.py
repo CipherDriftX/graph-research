@@ -10,9 +10,8 @@ graph-walk tracks have been below the novelty threshold for the consecutive
 window, or when both tracks report exhaustion (empty frontier / no new
 queries).
 
-The governors below are circuit breakers, NOT the intended stop condition —
-master plan first principle #2 is that saturation, not time or budget, ends a
-run. A run that stops on a governor is a run to investigate. That is why every
+The governors below are circuit breakers, not the intended stop condition:
+saturation, not time or budget, should end a run. A run that stops on a governor is a run to investigate. That is why every
 stop reason is logged distinctly: "saturated because novelty collapsed" and
 "stopped because we ran out of allowance" must never look the same in the logs.
 
@@ -215,7 +214,7 @@ def _check_saturation(state: dict, delivered: int | None) -> dict:
         }
 
     # --- branch-lineage budget -------------------------------------------
-    # ADR-0006 rejected a global-only record ceiling because one runaway
+    # A global-only record ceiling is not enough, because one runaway
     # branch would consume the whole run before other branches were touched.
     # Unbounded depth reintroduces that risk one level up: a deep chain of
     # splits under one root branch could starve its siblings. Each depth-1
