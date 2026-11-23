@@ -1,7 +1,7 @@
 """Tests for src/tools — all mock-based, zero real API calls.
 
 Covers: outlier_score, graph_walk (3 fixture variants), keyword_search,
-check_saturation, niche_scanner, dedup, signal_scoring.
+check_saturation, niche_queue, dedup, signal_scoring.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from src.tools.dedup import (
 from src.tools.graph_walk import graph_walk
 from src.tools.hydrate_metadata import _attribute
 from src.tools.keyword_search import broaden_or_pivot, keyword_search
-from src.tools.niche_scanner import compute_opportunity_score, scan_niches
+from src.nodes.niche_queue import queue_niches
 from src.tools.outlier_score import (
     build_window,
     compute_outlier_score,
@@ -595,47 +595,21 @@ class TestCheckSaturation:
 
 
 # ============================================================================
-# Niche scanner
+# Niche queue
 # ============================================================================
 
-class TestNicheScanner:
-    def test_deterministic_same_input(self):
-        niches = ["gaming", "cooking", "diy_crafts"]
-        r1 = scan_niches({"candidate_niches": niches, "selected_niche": ""})
-        r2 = scan_niches({"candidate_niches": niches, "selected_niche": ""})
-        assert r1["selected_niche"] == r2["selected_niche"]
-        assert r1["niche_scanner_evidence"]["ranked"] == r2["niche_scanner_evidence"]["ranked"]
+class TestQueueNiches:
+    def test_the_first_requested_niche_is_the_target(self):
+        result = queue_niches({"candidate_niches": ["gaming", "cooking", "diy crafts"]})
+        assert result["selected_niche"] == "gaming"
+        assert result["next_action"] == "niche_queued"
 
-    def test_ranks_niches(self):
-        niches = ["gaming", "cooking", "diy_crafts"]
-        result = scan_niches({"candidate_niches": niches, "selected_niche": ""})
-        assert result["selected_niche"] != ""
-        ranked = result["niche_scanner_evidence"]["ranked"]
-        assert len(ranked) == 3
-        scores = [r["opportunity_score"] for r in ranked]
-        assert scores == sorted(scores, reverse=True)
+    def test_blank_entries_are_ignored(self):
+        result = queue_niches({"candidate_niches": ["  ", "cooking"]})
+        assert result["selected_niche"] == "cooking"
 
-    def test_opportunity_score_range(self):
-        evidence = {
-            "channel_count_estimate": 1000,
-            "avg_views": 5000,
-            "engagement": 5.0,
-            "growth_signal": 0.5,
-        }
-        score = compute_opportunity_score(evidence)
-        assert 0.0 <= score <= 1.0
-
-    def test_opportunity_score_zero_competition(self):
-        score = compute_opportunity_score({
-            "channel_count_estimate": 0,
-            "avg_views": 0,
-            "engagement": 0,
-            "growth_signal": 0,
-        })
-        assert score == pytest.approx(0.5)
-
-    def test_empty_niches(self):
-        result = scan_niches({"candidate_niches": [], "selected_niche": ""})
+    def test_no_niches_ends_the_run(self):
+        result = queue_niches({"candidate_niches": []})
         assert result["next_action"] == "no_niches"
         assert result["selected_niche"] == ""
 

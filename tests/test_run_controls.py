@@ -276,13 +276,13 @@ class TestAFinishedRunReadsAsFinished:
 
     def test_reaching_the_graphs_last_node_is_complete(self, tmp_path, monkeypatch):
         run = self._status(tmp_path, monkeypatch,
-                           ["scan_niches", "classify_channel", "finalize_dataset"])
+                           ["queue_niches", "classify_channel", "finalize_dataset"])
         assert run["status"] == "complete"
 
     def test_a_run_cut_short_is_still_stopped(self, tmp_path, monkeypatch):
         """The distinction has to survive: a run killed mid-pipeline is not
         the same as one that finished, and both were red before."""
-        run = self._status(tmp_path, monkeypatch, ["scan_niches", "score_signals"])
+        run = self._status(tmp_path, monkeypatch, ["queue_niches", "score_signals"])
         assert run["status"] == "stopped"
 
     def test_a_live_run_is_running(self, tmp_path, monkeypatch):

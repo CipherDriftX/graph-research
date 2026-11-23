@@ -33,7 +33,7 @@ import {
  *  graph's. The PHASE each belongs to lives in lib/progress.ts, which the
  *  progress bar reads too -- one node/phase map, not two that can drift. */
 const NODE_LABEL: Record<string, string> = {
-  scan_niches: 'Reading the topic',
+  queue_niches: 'Reading the topic',
   expand_niche_adjacency: 'Looking for adjacent areas',
   build_taxonomy: 'Mapping sub-niches',
   select_next_node: 'Choosing the next branch',

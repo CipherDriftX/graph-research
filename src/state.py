@@ -231,17 +231,6 @@ class ErrorRecord(BaseModel):
     recoverable: bool = True
 
 
-class NicheScannerEvidence(BaseModel):
-    """Evidence collected by scan_niches for a candidate niche."""
-    niche_name: str
-    opportunity_score: float = 0.0
-    channel_count_estimate: int = 0
-    avg_views: float = 0.0
-    avg_subs: float = 0.0
-    growth_indicators: list[str] = Field(default_factory=list)
-    saturation_signal: str = "unknown"
-
-
 # ---------------------------------------------------------------------------
 # HarnessState — the graph's TypedDict (LangGraph state schema)
 # ---------------------------------------------------------------------------
@@ -256,7 +245,6 @@ class HarnessState(TypedDict, total=False):
     selected_niches: list[str]
     # Current position in the niche queue.
     niche_index: int
-    niche_scanner_evidence: dict
 
     tree: Annotated[dict[str, dict], _merge_tree_dict]
     active_node_id: Optional[str]
@@ -374,7 +362,6 @@ def create_initial_state(
         "selected_niche": "",
         "selected_niches": [],
         "niche_index": 0,
-        "niche_scanner_evidence": {},
         "tree": {},
         "active_node_id": None,
         "discovered_channel_ids": [],
@@ -490,7 +477,6 @@ def migrate_state(state: dict) -> dict:
 
     if version < 2:
         state.setdefault("saturated_branches", [])
-        state.setdefault("niche_scanner_evidence", {})
         version = 2
 
     if version < 3:

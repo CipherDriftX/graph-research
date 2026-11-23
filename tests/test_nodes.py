@@ -36,15 +36,6 @@ def base_state():
         "run_id": "run-001",
         "thread_id": "thread-001",
         "selected_niche": "ai coding assistants",
-        "niche_scanner_evidence": {
-            "niche_name": "ai coding assistants",
-            "opportunity_score": 0.78,
-            "channel_count_estimate": 1500,
-            "avg_views": 45000,
-            "avg_subs": 120000,
-            "growth_indicators": ["rising search volume", "new tools weekly"],
-            "saturation_signal": "medium",
-        },
         "tree": {},
         "active_node_id": None,
         "discovered_channel_ids": [],
@@ -1174,8 +1165,7 @@ class TestSelectNextNodeEdgeCases:
 
 class TestTaxonomyEdgeCases:
     @pytest.mark.asyncio
-    async def test_empty_niche_scanner_evidence(self, base_state):
-        base_state["niche_scanner_evidence"] = {}
+    async def test_builds_a_tree_from_the_niche_name_alone(self, base_state):
         with patch("src.nodes.taxonomy.complete_tier") as mock_complete:
             mock_complete.return_value = _fake_llm_response(TAXONOMY_VALID_JSON)
             result = await build_taxonomy(base_state)

@@ -361,7 +361,7 @@ def test_graph_compiles_and_has_expected_nodes():
     graph = build_graph()
     nodes = graph.nodes
     expected = {
-        "scan_niches",
+        "queue_niches",
         "expand_niche_adjacency",
         "build_taxonomy",
         "select_next_node",

@@ -115,17 +115,14 @@ async def build_taxonomy(state: dict) -> dict:
     nidx = state.get("niche_index", 0)
     niches = state.get("selected_niches") or []
     niche_name = niches[nidx] if nidx < len(niches) and niches else state.get("selected_niche", "unknown")
-    scanner_evidence = state.get("niche_scanner_evidence", {})
     thread_id = state.get("thread_id", "")
     max_branches = get_config().harness.max_branches
     # str.replace, not str.format — the prompt embeds a literal JSON schema
     # and format() parses its braces as fields.
     system_prompt = SYSTEM_PROMPT.replace("{MAX_BRANCHES}", str(max_branches or 6))
 
-    evidence_str = json.dumps(scanner_evidence, indent=2) if scanner_evidence else "No scanner evidence available."
     prompt = (
         f"Niche: {niche_name}\n\n"
-        f"Scanner evidence: {evidence_str}\n\n"
         f"Build a taxonomy tree for this niche. Respond with ONLY the JSON object per the schema."
     )
 

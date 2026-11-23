@@ -17,7 +17,6 @@ from langgraph.graph import StateGraph, START, END
 from src.state import HarnessState, create_initial_state, create_augmented_state, migrate_state
 from src.observability import write_node_logs
 from src.tools import deadline as run_deadline
-from src.tools.niche_scanner import scan_niches
 from src.tools.keyword_search import keyword_search
 from src.tools.graph_walk import graph_walk
 from src.tools.hydrate_metadata import hydrate_metadata
@@ -42,7 +41,7 @@ from src.nodes.assign_niche_families import assign_niche_families
 from src.nodes.populate_taxonomy_dimensions import populate_taxonomy_dimensions
 from src.nodes.populate_crime_metadata import populate_crime_metadata
 from src.nodes.expand_niche_adjacency import expand_niche_adjacency
-from src.nodes.niche_queue import has_more_niches, advance_to_next_niche
+from src.nodes.niche_queue import has_more_niches, queue_niches
 from src.nodes.describe_video_titles import describe_video_titles
 from src.nodes.describe_video_titles import describe_video_titles
 
@@ -247,9 +246,8 @@ def _guarded(fn, name: str):
     return wrapper
 
 
-def route_after_scan(state: dict) -> list[str]:
+def route_after_queue(state: dict) -> list[str]:
     if state.get("selected_niche"):
-        # v4: expand niche adjacency before building the taxonomy tree
         return ["expand_niche_adjacency"]
     return [END]
 
@@ -322,7 +320,7 @@ def route_after_floor(state: dict) -> list[str]:
 def build_graph() -> StateGraph:
     graph = StateGraph(HarnessState)
 
-    graph.add_node("scan_niches", _logged(scan_niches, "scan_niches"))
+    graph.add_node("queue_niches", _logged(queue_niches, "queue_niches"))
     graph.add_node("expand_niche_adjacency", _logged(expand_niche_adjacency, "expand_niche_adjacency"))
     graph.add_node("build_taxonomy", _logged(build_taxonomy, "build_taxonomy"))
     graph.add_node("select_next_node", _logged(select_next_node, "select_next_node"))
@@ -350,9 +348,9 @@ def build_graph() -> StateGraph:
     graph.add_node("assign_cohorts", _logged(assign_cohorts, "assign_cohorts"))
     graph.add_node("finalize_dataset", _logged(finalize_dataset, "finalize_dataset"))
 
-    graph.add_edge(START, "scan_niches")
+    graph.add_edge(START, "queue_niches")
     graph.add_conditional_edges(
-        "scan_niches", route_after_scan, ["expand_niche_adjacency", END]
+        "queue_niches", route_after_queue, ["expand_niche_adjacency", END]
     )
     graph.add_edge("expand_niche_adjacency", "build_taxonomy")
     graph.add_edge("build_taxonomy", "select_next_node")

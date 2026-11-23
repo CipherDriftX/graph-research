@@ -174,7 +174,7 @@ class TestLiveRunsListsOnlyConsoleLaunchedRuns:
         from src.api import runs as runs_mod
 
         (tmp_path / "run-fromlogs.jsonl").write_text(
-            '{"node_name":"scan_niches","thread_id":"t","timestamp":"2026-01-01T00:00:00Z"}\n'
+            '{"node_name":"queue_niches","thread_id":"t","timestamp":"2026-01-01T00:00:00Z"}\n'
         )
         monkeypatch.setattr(runs_mod, "log_dir", lambda: tmp_path)
         monkeypatch.setattr(runs_mod, "load_registry", lambda: [])

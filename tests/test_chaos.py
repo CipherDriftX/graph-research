@@ -282,7 +282,7 @@ async def test_graph_walk_branch_fails_keyword_succeeds():
 
 @pytest.mark.asyncio
 async def test_llm_taxonomy_returns_invalid_json_then_recovers():
-    state = {"selected_niche": "test", "niche_scanner_evidence": {}, "thread_id": "t"}
+    state = {"selected_niche": "test", "thread_id": "t"}
     calls = [
         {"content": "garbage not json {{{", "usage": {}, "cost_usd": 0.0},
         {"content": TAXONOMY_JSON, "usage": {}, "cost_usd": 0.0},
@@ -297,7 +297,7 @@ async def test_llm_taxonomy_returns_invalid_json_then_recovers():
 
 @pytest.mark.asyncio
 async def test_llm_taxonomy_returns_invalid_twice():
-    state = {"selected_niche": "test", "niche_scanner_evidence": {}, "thread_id": "t"}
+    state = {"selected_niche": "test", "thread_id": "t"}
     with patch("src.nodes.taxonomy.complete_tier") as mock_complete:
         mock_complete.return_value = {"content": "garbage not json {{{", "usage": {}, "cost_usd": 0.0}
         result = await build_taxonomy(state)

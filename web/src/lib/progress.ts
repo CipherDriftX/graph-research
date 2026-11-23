@@ -69,7 +69,7 @@ const PHASE_WEIGHT: Record<Phase, number> = {
 };
 
 const NODE_PHASE: Record<string, Phase> = {
-  scan_niches: 'plan',
+  queue_niches: 'plan',
   expand_niche_adjacency: 'plan',
   build_taxonomy: 'plan',
   select_next_node: 'plan',

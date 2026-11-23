@@ -1,6 +1,6 @@
 """expand_niche_adjacency — v4 adjacency cluster expansion node.
 
-Runs once after scan_niches picks a target niche. Uses the ontology
+Runs once after queue_niches sets the target niche. Uses the ontology
 (niche_adjacency table) + empirical graph scoring (cluster_branch's
 machinery, reused across niche boundaries) to build the research cluster.
 
@@ -35,17 +35,26 @@ async def expand_niche_adjacency(state: dict) -> dict:
     target_niche = state.get("selected_niche", "")
     if not target_niche:
         return {
-            "selected_niches": [target_niche] if target_niche else [],
+            "selected_niches": [],
             "niche_index": 0,
-            "niche_cluster_roles": {target_niche: "target"} if target_niche else {},
+            "niche_cluster_roles": {},
             "niche_cluster_scores": {},
             "node_logs": _log({"target": target_niche, "admitted": 0}),
         }
 
+    # Niches the user asked for come straight after the target, in their
+    # order. Adjacent niches the ontology admits are queued after those.
+    requested = [n for n in state.get("candidate_niches", [])[1:] if n != target_niche]
+    base_queue = list(dict.fromkeys([target_niche, *requested]))
+
     try:
         conn = get_connection()
     except Exception:
-        return {"node_logs": _log({"reason": "store unreachable", "target": target_niche})}
+        return {
+            "selected_niches": base_queue,
+            "niche_index": 0,
+            "node_logs": _log({"reason": "store unreachable", "target": target_niche}),
+        }
 
     # Stage 1: pull candidates from niche_adjacency
     candidates: list[dict[str, Any]] = []
@@ -70,7 +79,11 @@ async def expand_niche_adjacency(state: dict) -> dict:
         cur.close()
     except Exception:
         put_connection(conn)
-        return {"node_logs": _log({"reason": "query failed", "target": target_niche})}
+        return {
+            "selected_niches": base_queue,
+            "niche_index": 0,
+            "node_logs": _log({"reason": "query failed", "target": target_niche}),
+        }
 
 # Stage 2: score candidates against real discovery_edges + description similarity
     store = get_store()
@@ -153,7 +166,7 @@ async def expand_niche_adjacency(state: dict) -> dict:
             continue
 
     # Write admitted clusters
-    selected_niches = [target_niche] + [n for n, _, _ in admitted_niches]
+    selected_niches = list(dict.fromkeys(base_queue + [n for n, _, _ in admitted_niches]))
     niche_cluster_roles = {target_niche: "target"}
     for n, s, _ in admitted_niches:
         niche_cluster_roles[n] = "adjacent_admitted"

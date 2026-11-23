@@ -204,7 +204,6 @@ class TestMigrateState:
         assert result["keyword_search_done"] is False
         assert result["graph_walk_done"] is False
         assert result["saturated_branches"] == []
-        assert result["niche_scanner_evidence"] == {}
         assert result["hydrated_channel_ids"] == set()
 
     def test_migrates_v1_to_current(self):
@@ -213,7 +212,6 @@ class TestMigrateState:
         assert result["schema_version"] == CURRENT_SCHEMA_VERSION
         assert result["run_id"] == "r1"
         assert result["saturated_branches"] == []
-        assert result["niche_scanner_evidence"] == {}
         assert result["hydrated_channel_ids"] == set()
         # v9: the delivery target counts floor-passing channels, so the run
         # has to carry that set. A pre-v9 checkpoint cannot know it, and
@@ -253,12 +251,10 @@ class TestMigrateState:
             "schema_version": 4,
             "run_id": "r2",
             "saturated_branches": ["n1"],
-            "niche_scanner_evidence": {"x": 1},
         }
         result = migrate_state(state)
         assert result["schema_version"] == CURRENT_SCHEMA_VERSION
         assert result["saturated_branches"] == ["n1"]
-        assert result["niche_scanner_evidence"] == {"x": 1}
 
     def test_preserves_existing_values_on_migration(self):
         state = {"schema_version": 0, "run_id": "my-run", "thread_id": "my-thread"}

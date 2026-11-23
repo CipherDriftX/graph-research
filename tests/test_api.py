@@ -109,19 +109,19 @@ class TestPing:
 class TestListRuns:
     def test_status_running_when_process_alive(self, client, log_home):
         _write_registry(log_home, [{"run_id": "run-a", "thread_id": "t-a", "niches": ["x"], "pid": 999, "started_at": "2026-08-13T10:00:00Z"}])
-        _write_log(log_home, "run-a", [{"node_name": "scan_niches", "cost_usd": 0.5, "timestamp": "2026-08-13T10:00:01Z"}])
+        _write_log(log_home, "run-a", [{"node_name": "queue_niches", "cost_usd": 0.5, "timestamp": "2026-08-13T10:00:01Z"}])
 
         with patch.object(runs_mod, "is_process_running", return_value=True):
             runs = client.get("/api/runs").json()
 
         assert runs[0]["status"] == "running"
-        assert runs[0]["last_node"] == "scan_niches"
+        assert runs[0]["last_node"] == "queue_niches"
         assert runs[0]["cost_usd"] == 0.5
 
     def test_status_complete_when_synthesize_logged(self, client, log_home):
         _write_registry(log_home, [{"run_id": "run-b", "thread_id": "t-b", "niches": [], "pid": 1, "started_at": "2026-08-13T10:00:00Z"}])
         _write_log(log_home, "run-b", [
-            {"node_name": "scan_niches", "cost_usd": 0.1},
+            {"node_name": "queue_niches", "cost_usd": 0.1},
             {"node_name": "synthesize", "cost_usd": 0.2},
         ])
 
@@ -152,7 +152,7 @@ class TestListRuns:
         be deleted to clear the view either: the Spend page reads the same
         files to attribute cost per workbook.
         """
-        _write_log(log_home, "run-cli", [{"node_name": "scan_niches", "thread_id": "t-cli"}])
+        _write_log(log_home, "run-cli", [{"node_name": "queue_niches", "thread_id": "t-cli"}])
 
         with patch.object(runs_mod, "is_process_running", return_value=False):
             runs = client.get("/api/runs").json()
@@ -162,7 +162,7 @@ class TestListRuns:
     def test_the_underlying_discovery_still_works_for_cost_totals(self, log_home):
         """The capability the endpoint stopped using is still there and still
         correct -- anything totalling historical spend depends on it."""
-        _write_log(log_home, "run-cli", [{"node_name": "scan_niches", "thread_id": "t-cli"}])
+        _write_log(log_home, "run-cli", [{"node_name": "queue_niches", "thread_id": "t-cli"}])
 
         with patch.object(runs_mod, "is_process_running", return_value=False):
             runs = runs_mod.list_runs()
@@ -247,7 +247,7 @@ class TestGetRun:
         """A missing/unreachable checkpoint must be named in state_error — an
         empty state that looks like 'run has done nothing' is a lie."""
         _write_registry(log_home, [{"run_id": "run-d", "thread_id": "t-d", "niches": [], "pid": 1, "started_at": ""}])
-        _write_log(log_home, "run-d", [{"node_name": "scan_niches"}])
+        _write_log(log_home, "run-d", [{"node_name": "queue_niches"}])
 
         with patch.object(runs_mod, "is_process_running", return_value=False), patch(
             "src.api.server._load_checkpoint", side_effect=RuntimeError("no such thread")
