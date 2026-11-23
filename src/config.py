@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(ROOT / ".env")
 
 
 class PostgresConfig(BaseSettings):
@@ -57,7 +58,7 @@ class YouTubeConfig(BaseSettings):
     # live calls the Data API. replay answers from recorded public data in
     # fixtures_dir and needs no key.
     mode: Literal["live", "replay"] = "live"
-    fixtures_dir: str = "fixtures/youtube"
+    fixtures_dir: str = str(ROOT / "fixtures" / "youtube")
 
     @property
     def api_keys(self) -> list[str]:
@@ -101,7 +102,7 @@ class BrightDataConfig(BaseSettings):
     comments_dataset_id: str = "gd_lk9q0ew71spt1mxywf"
 
     mode: Literal["live", "replay"] = "live"
-    fixtures_dir: str = "fixtures/brightdata"
+    fixtures_dir: str = str(ROOT / "fixtures" / "brightdata")
 
     # Discovery jobs run for minutes, not seconds — measured 2026-08-13, a
     # keyword discovery on the Channels collector took ~6min and one on the

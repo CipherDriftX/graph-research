@@ -54,5 +54,12 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["F", "B"]
 
+[project.scripts]
+graph-research = "src.cli:main"
+graph-research-mcp = "src.mcp_server:main"
+
 [tool.setuptools.packages.find]
-where = ["src"]
+include = ["src", "src.*"]
+
+[tool.setuptools.package-data]
+"src.db" = ["schema.sql"]
