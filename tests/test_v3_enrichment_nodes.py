@@ -625,10 +625,9 @@ class TestDescribeVideoTitles:
         assert result["budget_spent_usd"] == 0.002
         assert result["node_logs"][0]["input_summary"]["described"] == 2
 
-    def test_mismatched_response_length_does_not_crash(self):
-        """A short/malformed LLM response must not raise — the batch is
-        skipped and recorded as an error, not silently zip-truncated in a
-        way that mislabels videos."""
+    def test_a_short_reply_is_rejected_rather_than_misaligned(self):
+        """One answer for three titles could describe any of them, so the
+        batch is recorded as an error and nothing is written."""
         cursor = MagicMock()
         cursor.fetchall.side_effect = [
             [("v1", "Title A"), ("v2", "Title B"), ("v3", "Title C")],
@@ -643,8 +642,27 @@ class TestDescribeVideoTitles:
             mock_complete.return_value = _llm_response('["Only one description."]')
             result = describe_video_titles({"thread_id": "t-1"})
 
-        # zip() truncates to the shorter list — exactly 1 persisted, not a crash.
-        assert mock_persist.call_count == 1
+        assert mock_persist.call_count == 0
+        assert "expected 3 descriptions, got 1" in result["errors"][0]["message"]
+
+    def test_a_reply_cut_off_at_the_token_limit_keeps_its_aligned_prefix(self):
+        cursor = MagicMock()
+        cursor.fetchall.side_effect = [
+            [("v1", "Title A"), ("v2", "Title B"), ("v3", "Title C")],
+            [],
+        ]
+        conn = _mock_conn(cursor)
+
+        with patch("src.nodes.describe_video_titles.get_connection", return_value=conn), \
+             patch("src.nodes.describe_video_titles.put_connection"), \
+             patch("src.nodes.describe_video_titles.complete_tier") as mock_complete, \
+             patch("src.tools.dedup.persist_video_v3") as mock_persist:
+            response = _llm_response('["About A.", "About B.", "About C but cu')
+            response["finish_reason"] = "length"
+            mock_complete.return_value = response
+            result = describe_video_titles({"thread_id": "t-1"})
+
+        assert [c.args[1] for c in mock_persist.call_args_list] == ["v1", "v2"]
         assert result["errors"] == []
 
     def test_no_eligible_videos_is_a_clean_no_op(self):
@@ -788,7 +806,7 @@ class TestTopLifetimeSampling:
         _tag_video_samples(conn, videos)
         statements = [c.args[0] for c in cur.execute.call_args_list]
         ids = [c.args[1][0] for c in cur.execute.call_args_list]
-        top = [i for s, i in zip(statements, ids) if "'top_lifetime'" in s]
+        top = [i for s, i in zip(statements, ids, strict=True) if "'top_lifetime'" in s]
         assert "old_hit" in top
 
     def test_shorts_are_excluded_from_long_form_sampling(self):

@@ -132,7 +132,7 @@ class TestTruncationMidValue:
         descriptions = loads_forgiving(
             '["about v1", "about v2", "about v3 but cut', expect="array"
         )
-        assert list(zip(video_ids, descriptions)) == [
+        assert list(zip(video_ids, descriptions, strict=False)) == [
             ("v1", "about v1"), ("v2", "about v2"),
         ]
 

@@ -143,6 +143,13 @@ def describe_video_titles(state: dict) -> dict:
             )
             if not isinstance(descriptions, list):
                 raise ValueError("response was not a JSON array")
+            # Answers are matched to titles by position. A reply cut off at
+            # max_tokens loses only its tail, so its prefix still lines up;
+            # any other count mismatch would put descriptions on the wrong
+            # videos.
+            cut_off = result.get("finish_reason") == "length"
+            if len(descriptions) > len(batch) or (len(descriptions) < len(batch) and not cut_off):
+                raise ValueError(f"expected {len(batch)} descriptions, got {len(descriptions)}")
             return descriptions, result
 
         answers = map_llm(
@@ -168,7 +175,7 @@ def describe_video_titles(state: dict) -> dict:
                 "cost_usd",
                 estimate_cost("cheap", usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)),
             )
-            for (vid_id, _title), desc in zip(batch, descriptions):
+            for (vid_id, _title), desc in zip(batch, descriptions, strict=False):
                 if not isinstance(desc, str) or not desc.strip():
                     continue
                 try:
