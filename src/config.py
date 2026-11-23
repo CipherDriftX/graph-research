@@ -1,7 +1,7 @@
-"""Centralized configuration for the YouTube Niche-Research Harness.
+"""Typed configuration for the whole pipeline.
 
-All tunable parameters live here — no magic numbers scattered through node code.
-Environment variables provide secrets; this module provides typed, validated config.
+Every tunable number lives here instead of in node code. Secrets come from
+environment variables or .env.
 """
 
 from __future__ import annotations

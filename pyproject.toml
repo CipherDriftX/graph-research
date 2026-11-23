@@ -3,9 +3,10 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "niche-research-harness"
+name = "graph-research"
 version = "0.1.0"
-description = "Autonomous YouTube niche-research pipeline — dual-track discovery (keyword + graph walk), metadata hydration, evidence-graded synthesis"
+description = "Maps a YouTube niche by walking the channel graph and keyword search in parallel, then enriches every channel into a queryable dataset"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "langgraph>=0.2.0",
@@ -19,7 +20,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "structlog>=24.0.0",
     "tenacity>=9.0.0",
-    "uuid7>=0.1.0",
     "networkx>=3.0",
     "openpyxl>=3.1.0",
 ]
@@ -31,6 +31,7 @@ dev = [
     "pytest-mock>=3.14.0",
     "pytest-timeout>=2.3.0",
     "pre-commit>=3.8.0",
+    "ruff>=0.14",
 ]
 mcp = [
     "mcp>=2.0,<3",
@@ -42,7 +43,16 @@ console = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --tb=short -p no:cacheprovider"
+addopts = "--tb=short -p no:cacheprovider"
+asyncio_default_fixture_loop_scope = "function"
+timeout = 120
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["F", "B"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
