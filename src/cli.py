@@ -215,7 +215,10 @@ def missing_keys(run_mode: str) -> list[str]:
 
 def main() -> None:
     configure_logging()
-    parser = argparse.ArgumentParser(description="YouTube niche research harness")
+    parser = argparse.ArgumentParser(
+        prog="graph-research",
+        description="Map a YouTube niche by graph walk and keyword search.",
+    )
     parser.add_argument(
         "niches", nargs="*",
         help="Niches to research. The first is the target; the rest run after it in order.",

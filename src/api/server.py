@@ -1,4 +1,4 @@
-"""FastAPI backend for the niche-research console.
+"""FastAPI backend for the web console.
 
 Adds an interface over the harness; it is not a second execution path. Runs
 are launched through the same ``python -m src.cli`` entrypoint, state is read
@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from src.api import runs as runs_mod
 from src.api import store_queries
 
-app = FastAPI(title="Niche Research Console API", version="1.0.0")
+app = FastAPI(title="graph-research API", version="0.1.0")
 
 # The Vite dev server runs on a different origin during development. The
 # production path serves the built frontend from this same process, where

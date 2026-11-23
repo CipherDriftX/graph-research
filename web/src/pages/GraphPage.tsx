@@ -10,8 +10,8 @@ import {
   ErrorState,
   Skeleton,
   Tooltip,
-  TRACK_META,
 } from '../components/primitives';
+import { TRACK_META } from '../lib/tracks';
 
 // Ordinal ramp over one hue: families are ranked by size, not categorical,
 // so a rainbow would imply difference in kind rather than degree.

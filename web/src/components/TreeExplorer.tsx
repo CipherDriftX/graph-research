@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { TreeNodeData } from '../lib/api';
 import type { DiscoveryMethod } from '../lib/api';
-import { TRACK_META } from './primitives';
+import { TRACK_META } from '../lib/tracks';
 
 /**
  * The workbook explored as an indented, collapsible list.

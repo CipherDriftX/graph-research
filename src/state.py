@@ -1,4 +1,4 @@
-"""HarnessState — the central typed contract for the niche-research pipeline.
+"""HarnessState, the typed state every pipeline node reads and writes.
 
 Every field answers one question: if two nodes write it in the same step,
 what should happen?

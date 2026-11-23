@@ -1,1 +1,1 @@
-"""Web API layer for the niche-research console."""
+"""Web API layer for the console."""

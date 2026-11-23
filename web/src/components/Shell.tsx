@@ -170,7 +170,7 @@ export function Shell() {
             {!collapsed && (
               <div className="min-w-0 leading-tight">
                 <p className="truncate font-display text-sm font-semibold tracking-tight text-ink">
-                  Niche Harness
+                  graph-research
                 </p>
                 <p className="truncate font-mono text-[10px] tracking-wide text-ink-3">
                   research console
