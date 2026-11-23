@@ -354,7 +354,7 @@ function RunDetail({ run }: { run: Run }) {
   const { entries, connection } = useRunEvents(run.run_id, isLive);
   const progress = useMemo(
     () => computeProgress(entries, run.status, run.rounds_total),
-    [entries, run.status],
+    [entries, run.status, run.rounds_total],
   );
 
   // The checkpoint carries the counts the log lines do not. Polled rather

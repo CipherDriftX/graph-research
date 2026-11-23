@@ -27,7 +27,7 @@ const queryClient = new QueryClient({
 // Dark is the default for a monitoring console; the toggle in the rail
 // persists an explicit choice, and the tokens honour prefers-color-scheme
 // when nothing has been chosen.
-if (!localStorage.getItem('niche-harness-theme')) {
+if (!localStorage.getItem('graph-research-theme')) {
   document.documentElement.setAttribute('data-theme', 'dark');
 }
 

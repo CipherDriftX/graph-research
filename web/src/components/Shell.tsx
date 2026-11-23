@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
@@ -59,16 +59,16 @@ const NAV = [
 
 function useTheme() {
   const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem('niche-harness-theme') as 'dark' | 'light') ?? 'dark',
+    () => (localStorage.getItem('graph-research-theme') as 'dark' | 'light') ?? 'dark',
   );
   // False on the mount that sets the theme the page already loaded in --
   // only a later, user-driven change should animate.
-  const isFirstRender = useState(() => ({ current: true }))[0];
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     document.documentElement.classList.toggle('theme-changing', !isFirstRender.current);
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('niche-harness-theme', theme);
+    localStorage.setItem('graph-research-theme', theme);
     isFirstRender.current = false;
     if (!document.documentElement.classList.contains('theme-changing')) return;
     const id = window.setTimeout(
@@ -83,10 +83,10 @@ function useTheme() {
 
 function useCollapsed() {
   const [collapsed, setCollapsed] = useState<boolean>(
-    () => localStorage.getItem('niche-harness-sidebar') === 'collapsed',
+    () => localStorage.getItem('graph-research-sidebar') === 'collapsed',
   );
   useEffect(() => {
-    localStorage.setItem('niche-harness-sidebar', collapsed ? 'collapsed' : 'expanded');
+    localStorage.setItem('graph-research-sidebar', collapsed ? 'collapsed' : 'expanded');
   }, [collapsed]);
   return { collapsed, toggle: () => setCollapsed((c) => !c) };
 }
