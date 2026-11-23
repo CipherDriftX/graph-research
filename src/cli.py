@@ -219,6 +219,21 @@ def _preflight_account_budget(resume_thread_id: str | None = None) -> bool:
     return True
 
 
+def missing_keys(run_mode: str) -> list[str]:
+    """Environment variables this run needs that are not set."""
+    from src.config import get_config
+
+    cfg = get_config()
+    needed: list[tuple[str, str]] = []
+    if cfg.youtube.mode == "live":
+        needed.append(("YOUTUBE_API_KEY", cfg.youtube.api_key))
+    if run_mode != "snapshot_refresh":
+        needed.append(("OPENROUTER_API_KEY", cfg.openrouter.api_key))
+        if cfg.brightdata.mode == "live":
+            needed.append(("BRIGHTDATA_API_KEY", cfg.brightdata.api_key))
+    return [name for name, value in needed if not value.strip()]
+
+
 def main() -> None:
     configure_logging()
     parser = argparse.ArgumentParser(description="YouTube niche research harness")
@@ -251,6 +266,11 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+
+    missing = missing_keys("snapshot_refresh" if args.snapshot else "research")
+    if missing:
+        print(f"Missing in .env: {', '.join(missing)}. See .env.example.")
+        raise SystemExit(1)
 
     # Parsed before the account-budget check so a resume can be recognised —
     # the check needs --resume to look up what this thread has already spent.
