@@ -20,16 +20,14 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 class PostgresConfig(BaseSettings):
     host: str = "localhost"
     port: int = 5432
-    # `POSTGRES_DB` is the conventional name and what .env/.env.example set,
-    # but env_prefix="POSTGRES_" would resolve this field as POSTGRES_DATABASE
-    # — so without the alias the setting is silently ignored and the field
-    # default wins. That default happens to match today, which is exactly what
-    # makes it dangerous: point .env at another database and writes still go
-    # to niche_harness.
+    # env_prefix would read this field from POSTGRES_DATABASE; the alias
+    # makes it read the conventional POSTGRES_DB instead.
     database: str = Field(default="niche_harness", validation_alias="POSTGRES_DB")
     user: str = "niche_harness"
     password: str = ""
-    sslmode: str = "require"
+    # "prefer" uses TLS when the server offers it, so a local Postgres works
+    # out of the box. Set POSTGRES_SSLMODE=require for a managed database.
+    sslmode: str = "prefer"
     # psycopg_pool's own default is 30s. For an interactive console that's a
     # long time to sit on a spinner before the "store unreachable" banner
     # shows; for the harness's own writes, a healthy pool hands back a
@@ -43,14 +41,6 @@ class PostgresConfig(BaseSettings):
     def connection_string(self) -> str:
         return (
             f"postgresql://{self.user}:{self.password}"
-            f"@{self.host}:{self.port}/{self.database}"
-            f"?sslmode={self.sslmode}"
-        )
-
-    @property
-    def async_connection_string(self) -> str:
-        return (
-            f"postgresql+asyncpg://{self.user}:{self.password}"
             f"@{self.host}:{self.port}/{self.database}"
             f"?sslmode={self.sslmode}"
         )
