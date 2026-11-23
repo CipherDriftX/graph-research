@@ -227,8 +227,8 @@ class HarnessConfig(BaseSettings):
     youtube_daily_quota_ceiling: int = 10000
     youtube_quota_target_ratio: float = 0.90
     brightdata_max_concurrency: int = 10
-    log_dir: str = "logs"
-    export_dir: str = "exports"
+    log_dir: str = str(ROOT / "logs")
+    export_dir: str = str(ROOT / "exports")
     # Top-N by outlier score. The full video table runs to five figures;
     # a Content Creation Team wants the actionable slice, not the dump.
     export_max_videos: int = 500
