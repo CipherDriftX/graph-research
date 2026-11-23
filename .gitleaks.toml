@@ -1,0 +1,8 @@
+# Default rules, minus the recorded fixtures: they are public YouTube data
+# whose free-text descriptions and image URLs can look like keys.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "recorded public fixtures"
+paths = ['''(^|/)fixtures/.*\.json$''']
