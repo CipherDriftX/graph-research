@@ -420,27 +420,13 @@ class TestGetModelForTier:
         assert cfg["thinking"] is False
         assert cfg["temperature"] == 0.7
 
-    def test_cross_judge_tier(self):
-        cfg = get_model_for_tier("cross_judge")
-        assert cfg["provider"] == "kimi"
-        assert cfg["model_name"] == "kimi-k3"
-        assert cfg["thinking"] is False
-        assert cfg["temperature"] == 0.0
-
-    def test_thumbnail_vision_tier(self):
-        cfg = get_model_for_tier("thumbnail_vision")
-        assert cfg["provider"] == "kimi"
-        assert cfg["model_name"] == "kimi-k2.6"
-        assert cfg["thinking"] is False
-        assert cfg["temperature"] == 0.0
-
     def test_unknown_tier_raises(self):
         with pytest.raises(ValueError, match="Unknown tier"):
             get_model_for_tier("nonexistent")
 
     def test_all_tiers_have_required_keys(self):
         required = {"provider", "model_name", "thinking", "temperature", "max_tokens", "input_cost_per_1m", "output_cost_per_1m"}
-        for tier in ["frontier", "mid", "cheap", "cross_judge", "thumbnail_vision"]:
+        for tier in ["frontier", "mid", "cheap"]:
             cfg = get_model_for_tier(tier)
             missing = required - set(cfg.keys())
             assert not missing, f"Tier {tier} missing keys: {missing}"
@@ -505,34 +491,6 @@ class TestCompleteTier:
 
     @patch("src.llm.cascade.get_client")
     @patch("src.llm.cascade.get_model_for_tier")
-    def test_routes_to_cross_judge(self, mock_get_tier, mock_get_client):
-        mock_get_tier.return_value = {
-            "provider": "kimi",
-            "model_name": "kimi-k3",
-            "thinking": False,
-            "temperature": 0.0,
-            "max_tokens": 4096,
-            "input_cost_per_1m": 3.00,
-            "output_cost_per_1m": 15.00,
-        }
-        mock_client = MagicMock()
-        mock_client.complete.return_value = {"content": "judge"}
-        mock_get_client.return_value = mock_client
-
-        result = complete_tier("cross_judge", "judge this")
-
-        mock_client.complete.assert_called_once_with(
-            prompt="judge this",
-            system=None,
-            model="kimi-k3",
-            temperature=0.0,
-            max_tokens=4096,
-            thinking=False,
-        )
-        assert result == {"content": "judge"}
-
-    @patch("src.llm.cascade.get_client")
-    @patch("src.llm.cascade.get_model_for_tier")
     def test_falls_back_to_kimi_on_rate_limit(self, mock_get_tier, mock_get_client):
         from openai import RateLimitError
 
@@ -558,30 +516,6 @@ class TestCompleteTier:
         assert mock_client.complete.call_count == 2
         assert mock_client.complete.call_args_list[1].kwargs["model"] == "kimi-k3"
 
-    @patch("src.llm.cascade.get_client")
-    @patch("src.llm.cascade.get_model_for_tier")
-    def test_no_fallback_for_cross_judge(self, mock_get_tier, mock_get_client):
-        from openai import RateLimitError
-
-        mock_get_tier.return_value = {
-            "provider": "kimi",
-            "model_name": "kimi-k3",
-            "thinking": False,
-            "temperature": 0.0,
-            "max_tokens": 4096,
-            "input_cost_per_1m": 3.00,
-            "output_cost_per_1m": 15.00,
-        }
-        mock_client = MagicMock()
-        mock_client.complete.side_effect = RateLimitError(
-            "rate limited", response=MagicMock(), body=None
-        )
-        mock_get_client.return_value = mock_client
-
-        with pytest.raises(RateLimitError):
-            complete_tier("cross_judge", "judge this")
-
-
 class TestEstimateCost:
     def test_frontier_1m_tokens(self):
         cost = estimate_cost("frontier", prompt_tokens=1_000_000, completion_tokens=1_000_000)
@@ -590,14 +524,6 @@ class TestEstimateCost:
     def test_cheap_1m_tokens(self):
         cost = estimate_cost("cheap", prompt_tokens=1_000_000, completion_tokens=1_000_000)
         assert cost == pytest.approx(_per_million("deepseek-v4-flash"))
-
-    def test_cross_judge_1m_tokens(self):
-        cost = estimate_cost("cross_judge", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(_per_million("kimi-k3"))
-
-    def test_thumbnail_vision_1m_tokens(self):
-        cost = estimate_cost("thumbnail_vision", prompt_tokens=1_000_000, completion_tokens=1_000_000)
-        assert cost == pytest.approx(_per_million("kimi-k2.6"))
 
     def test_zero_tokens(self):
         cost = estimate_cost("frontier", prompt_tokens=0, completion_tokens=0)

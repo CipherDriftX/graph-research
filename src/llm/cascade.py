@@ -1,15 +1,7 @@
-"""Cascade/tier router — maps logical tiers to concrete model+provider combos.
+"""Maps the three logical tiers (frontier, mid, cheap) to concrete models.
 
-Production tiers (frontier/mid/cheap) default to the DeepSeek lineage and
-fall back to the Kimi family on rate-limit/timeout. cross_judge and
-thumbnail_vision have no fallback: cross_judge must stay a different family
-than production (a model can't grade its own output), and thumbnail_vision
-needs Kimi's native vision (DeepSeek V4 is text-only).
-
-Scope note: `thumbnail_vision` is defined but **not used anywhere in v1** —
-this harness does no image or video processing. It reasons over engagement
-metrics and graph structure only. The tier is kept as a working definition for
-when multimodal analysis is picked up in v2; nothing routes to it today.
+Each tier uses a DeepSeek model and falls back to a Kimi model when the
+first call hits a rate limit or a timeout.
 """
 
 from __future__ import annotations
@@ -56,20 +48,6 @@ _TIER_MAP_BASE: dict[str, dict[str, Any]] = {
         "model_name": "deepseek-v4-flash",
         "thinking": False,
         "temperature": 0.7,
-        "max_tokens": 4096,
-    },
-    "cross_judge": {
-        "provider": "kimi",
-        "model_name": "kimi-k3",
-        "thinking": False,
-        "temperature": 0.0,
-        "max_tokens": 4096,
-    },
-    "thumbnail_vision": {
-        "provider": "kimi",
-        "model_name": "kimi-k2.6",
-        "thinking": False,
-        "temperature": 0.0,
         "max_tokens": 4096,
     },
 }

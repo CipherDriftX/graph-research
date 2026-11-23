@@ -228,24 +228,6 @@ def _attribute(channel_id: str, kw_found: set[str], gw_found: set[str]) -> str:
     return "unattributed"
 
 
-
-def _persist_channels_for_test(channels: list[dict]) -> list[str]:
-    """The per-channel isolation, exercised without a database.
-
-    hydrate_metadata's persistence loop needs a live connection, a YouTube
-    client and a quota budget, so the behaviour that matters here -- one
-    channel's failure not taking the batch with it -- is otherwise only
-    assertable by reading the source. This runs the same shape.
-    """
-    persisted: list[str] = []
-    for ch in channels:
-        try:
-            persist_channel(None, ch)
-        except Exception:
-            continue
-        persisted.append(ch["channel_id"])
-    return persisted
-
 def hydrate_metadata(state: dict) -> dict:
     channel_ids = state.get("discovered_channel_ids", [])
     thread_id = state.get("thread_id", "")
