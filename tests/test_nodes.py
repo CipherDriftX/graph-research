@@ -13,11 +13,9 @@ Async nodes are tested with `with patch(...)` context managers (decorator-based
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone, timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from psycopg_pool import PoolTimeout
 
 from src.nodes.compact_branch import compact_branch
 from src.nodes.select_next_node import select_next_node

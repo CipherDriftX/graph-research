@@ -213,7 +213,7 @@ async def test_keyword_search_branch_fails_graph_walk_succeeds():
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
         patch("src.db.connection.get_connection") as mock_get_conn,
-        patch("src.db.connection.put_connection") as mock_put_conn,
+        patch("src.db.connection.put_connection"),
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
@@ -248,7 +248,7 @@ async def test_graph_walk_branch_fails_keyword_succeeds():
         patch("src.tools.hydrate_metadata.YouTubeAPIClient") as mock_yt,
         patch("src.nodes.compact_branch.get_store") as mock_store,
         patch("src.db.connection.get_connection") as mock_get_conn,
-        patch("src.db.connection.put_connection") as mock_put_conn,
+        patch("src.db.connection.put_connection"),
     ):
         _mock_llm_tier(mock_tax)
         _mock_llm_tier(mock_comp)
@@ -484,7 +484,7 @@ class TestASnapshotThatIsNotQuiteReadyIsWaitedFor:
 
     @pytest.mark.asyncio
     async def test_it_polls_again_rather_than_discarding_the_snapshot(self):
-        from unittest.mock import AsyncMock, MagicMock, patch
+        from unittest.mock import AsyncMock, patch
 
         from src.tools.bright_data import BrightDataClient, SnapshotNotReady
 
@@ -510,7 +510,7 @@ class TestASnapshotThatIsNotQuiteReadyIsWaitedFor:
     async def test_it_still_stops_at_the_poll_deadline(self):
         """Waiting forever would be the other failure. The snapshot budget
         still bounds it."""
-        from unittest.mock import AsyncMock, MagicMock, patch
+        from unittest.mock import AsyncMock, patch
 
         from src.tools.bright_data import (
             BrightDataClient, BrightDataError, SnapshotNotReady,

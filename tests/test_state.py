@@ -19,7 +19,6 @@ from __future__ import annotations
 import pytest
 from src.state import (
     _merge_discovered_channels,
-    _merge_discovered_videos,
     _merge_set_union,
     _merge_tree_dict,
     _accumulate_float,

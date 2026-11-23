@@ -446,7 +446,6 @@ class TestApiKeyRotation:
         )
 
     def test_rotates_to_the_next_key_on_quota_exhaustion(self):
-        import httpx
 
         c = self._client_with(["spent", "fresh"])
         used = []

@@ -17,7 +17,6 @@ import time
 from typing import Any
 
 from src.tools.run_scope import scope_clause
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.state import NodeLog, ErrorRecord
 

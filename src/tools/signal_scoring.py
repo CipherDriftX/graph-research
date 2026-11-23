@@ -326,7 +326,7 @@ def score_signals(state: dict) -> dict:
                         }
                     if vid_evergreens:
                         subs_weighted = sum(
-                            eg * int(v.get("view_count") or 0) for v, eg in zip(vids, vid_evergreens)
+                            eg * int(v.get("view_count") or 0) for v, eg in zip(vids, vid_evergreens, strict=True)
                         ) / max(1, sum(int(v.get("view_count") or 0) for v in vids))
                         v3_fields["evergreen_score"] = round(subs_weighted, 2)
                     else:

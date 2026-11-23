@@ -10,7 +10,7 @@ fields; accumulating fields use Annotated with the right merge strategy.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Literal, Optional, TypedDict, Union
+from typing import Annotated, Any, Literal, Optional, TypedDict
 
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field

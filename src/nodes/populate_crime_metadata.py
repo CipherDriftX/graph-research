@@ -12,16 +12,14 @@ from __future__ import annotations
 
 import json
 import time
-from difflib import SequenceMatcher
 from typing import Any
 
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.tools.run_scope import scope_clause
 from src.tools import deadline as run_deadline
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
-from src.llm.cascade import complete_tier, estimate_cost
+from src.llm.cascade import complete_tier
 import structlog
 
 from src.state import NodeLog, ErrorRecord
@@ -150,7 +148,6 @@ def _run_has_crime_channels(conn: Any, state: dict) -> bool:
 
 def populate_crime_metadata(state: dict) -> dict:
     thread_id = state.get("thread_id", "")
-    run_id = state.get("run_id", "")
     start = time.monotonic()
     errors: list[dict] = []
 
@@ -350,7 +347,7 @@ def populate_crime_metadata(state: dict) -> dict:
             mid = len(rows) // 2
             return _ask(rows[:mid]) + _ask(rows[mid:])
 
-        return list(zip(rows, parsed))
+        return list(zip(rows, parsed, strict=True))
 
     populated = 0
     batches = [

@@ -43,7 +43,6 @@ from src.nodes.populate_crime_metadata import populate_crime_metadata
 from src.nodes.expand_niche_adjacency import expand_niche_adjacency
 from src.nodes.niche_queue import has_more_niches, queue_niches
 from src.nodes.describe_video_titles import describe_video_titles
-from src.nodes.describe_video_titles import describe_video_titles
 
 
 def _logged(fn, name: str):

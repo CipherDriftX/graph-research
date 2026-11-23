@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import psycopg
 import pytest
 from psycopg_pool import ConnectionPool
 

@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any
 
 from src.llm.json_parse import loads_forgiving
 from src.config import get_config

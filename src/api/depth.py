@@ -34,7 +34,6 @@ from dataclasses import asdict, dataclass, field, replace
 from typing import Any
 
 from src.tools.deliverable import (
-    DISCOVERY_YIELD,
     _FLOOR_YIELD,
     _FLOOR_YIELD_PESSIMISTIC,
     _SCOPE_YIELD,

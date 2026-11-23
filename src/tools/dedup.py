@@ -178,7 +178,7 @@ def fetch_videos_by_channels(conn: Any, channel_ids: list[str]) -> list[dict]:
         )
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in rows]
+        return [dict(zip(cols, row, strict=True)) for row in rows]
     finally:
         cur.close()
 

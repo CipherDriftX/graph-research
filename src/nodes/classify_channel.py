@@ -28,11 +28,11 @@ from __future__ import annotations
 import json
 import time
 from difflib import SequenceMatcher
+from typing import Any
 
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.tools.run_scope import scope_clause
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.llm.cascade import complete_tier, estimate_cost
 from src.state import NodeLog, ErrorRecord
@@ -148,7 +148,6 @@ def _match_niche(
 def classify_channel(state: dict) -> dict:
     thread_id = state.get("thread_id", "")
     start = time.monotonic()
-    cfg = get_config().harness
     run_id = state.get("run_id", "")
     errors: list[dict] = []
 

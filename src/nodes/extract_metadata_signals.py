@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import re
 import time
-from collections import Counter
 
 from src.tools.run_scope import scope_clause
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.state import NodeLog, ErrorRecord
 
@@ -277,7 +275,6 @@ def extract_metadata_signals(state: dict) -> dict:
 
     for ch_id, title, desc in channels:
         ch_fields: dict = {}
-        title_sig = _title_signals(title or "")
         monet = _detect_monetization(title or "", desc or "")
         ch_fields.update(monet)
 

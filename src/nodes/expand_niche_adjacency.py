@@ -12,10 +12,9 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.nodes.store import get_store
-from src.state import NodeLog, ErrorRecord
+from src.state import NodeLog
 
 
 async def expand_niche_adjacency(state: dict) -> dict:
@@ -119,7 +118,6 @@ async def expand_niche_adjacency(state: dict) -> dict:
             neighbor_refs = {ch["channel_id"] for ch in neighbor_chs}
             all_channels = target_chs + neighbor_chs
 
-            from src.tools.bright_data import normalize_channel_ref
             all_refs = sorted(target_refs | neighbor_refs)
             edges = await store.get_discovery_edges_for_channels(all_refs) if all_refs else []
 

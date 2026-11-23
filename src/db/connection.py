@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-import psycopg
 from psycopg_pool import AsyncConnectionPool, ConnectionPool
 
 from src.config import get_config

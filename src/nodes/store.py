@@ -29,7 +29,7 @@ def _fetch_channels(channel_ids: list[str]) -> list[dict[str, Any]]:
         )
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in rows]
+        return [dict(zip(cols, row, strict=True)) for row in rows]
     finally:
         put_connection(conn)
 
@@ -52,7 +52,7 @@ def _fetch_videos(channel_ids: list[str] | None = None) -> list[dict[str, Any]]:
             )
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in rows]
+        return [dict(zip(cols, row, strict=True)) for row in rows]
     finally:
         put_connection(conn)
 
@@ -84,7 +84,7 @@ def _fetch_discovery_edges(channel_refs: list[str]) -> list[dict[str, Any]]:
         )
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return [dict(zip(cols, row)) for row in rows]
+        return [dict(zip(cols, row, strict=True)) for row in rows]
     finally:
         put_connection(conn)
 

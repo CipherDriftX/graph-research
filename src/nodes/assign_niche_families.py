@@ -42,7 +42,7 @@ from typing import Any
 import structlog
 
 from src.db.connection import get_connection, put_connection
-from src.llm.cascade import complete_tier, estimate_cost
+from src.llm.cascade import complete_tier
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.state import ErrorRecord, NodeLog

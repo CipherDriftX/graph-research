@@ -15,15 +15,13 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import Any
 
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.tools.run_scope import scope_clause
 from src.tools import deadline as run_deadline
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
-from src.llm.cascade import complete_tier, estimate_cost
+from src.llm.cascade import complete_tier
 from src.state import NodeLog, ErrorRecord
 from src.tools.deliverable import eligible_sql
 
@@ -89,7 +87,6 @@ def populate_shared_fields(state: dict) -> dict:
     thread_id = state.get("thread_id", "")
     run_id = state.get("run_id", "")
     start = time.monotonic()
-    cfg = get_config().harness
     errors: list[dict] = []
 
     def _log(input_summary: dict) -> list[dict]:

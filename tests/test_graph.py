@@ -15,7 +15,7 @@ import contextlib
 import pytest
 from unittest.mock import MagicMock, patch, AsyncMock
 
-from src.graph import build_graph, compile_graph, run_pipeline
+from src.graph import build_graph, run_pipeline
 
 
 TAXONOMY_JSON = json.dumps(

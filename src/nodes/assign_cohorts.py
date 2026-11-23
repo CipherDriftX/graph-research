@@ -16,7 +16,6 @@ import time
 from datetime import datetime, timezone
 
 from src.tools.run_scope import scope_clause
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.state import NodeLog, ErrorRecord
 from src.tools.deliverable import eligible_sql
@@ -141,7 +140,7 @@ def assign_cohorts(state: dict) -> dict:
 
         peer_floor = _peer_engagement_floors(conn)
 
-        for (ch_id, subs, ch_creation, v_start, eng, eg, vertical,
+        for (ch_id, subs, ch_creation, v_start, eng, _evergreen, vertical,
              size_bucket, last_upload, video_n, first_upload) in channels:
             if not vertical:
                 continue

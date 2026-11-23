@@ -150,7 +150,6 @@ class TestTheTargetCountCannotBreakItsOwnRule:
 
 class TestTheWorkbookCarriesIt:
     def test_the_families_sheet_is_one_of_the_swept_sheets(self):
-        from src.export import sheet_rows
 
         src = pathlib.Path("src/export.py").read_text(encoding="utf-8")
         body = src[src.index("def sheet_rows("):src.index("def export_excel(")]

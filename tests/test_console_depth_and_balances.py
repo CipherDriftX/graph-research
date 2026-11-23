@@ -13,6 +13,7 @@ from unittest.mock import patch
 import pytest
 
 from src.api import depth as depth_mod
+from src.tools.deliverable import DISCOVERY_YIELD
 
 
 def _balances(openrouter=None, brightdata=None):
@@ -557,7 +558,7 @@ class TestCrimeIsSizedDifferently:
         for tier in depth_mod.TIERS:
             crime = tier.for_topic("crime")
             work = depth_mod._research_seconds(
-                crime.max_channels, depth_mod.DISCOVERY_YIELD, True
+                crime.max_channels, DISCOVERY_YIELD, True
             )
             budget = crime.hours * 3600 * depth_mod._SAFETY_MARGIN
             assert work <= budget, f"{tier.id}: {work:.0f}s of work in {budget:.0f}s"

@@ -21,7 +21,7 @@ def _fetch(sql: str, params: tuple = ()) -> list[dict[str, Any]]:
             if cur.description is None:
                 return []
             cols = [d.name for d in cur.description]
-            return [dict(zip(cols, row)) for row in cur.fetchall()]
+            return [dict(zip(cols, row, strict=True)) for row in cur.fetchall()]
     finally:
         put_connection(conn)
 

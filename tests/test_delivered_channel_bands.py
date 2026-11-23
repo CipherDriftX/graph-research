@@ -23,7 +23,6 @@ channels and 1,103 videos for $1.30. Its card had said 100 channels,
 from __future__ import annotations
 
 import pathlib
-import re
 
 from unittest.mock import patch
 
@@ -248,7 +247,6 @@ class TestTheTargetIsMeasuredAgainstTheFileItself:
             assert workbook_channel_count("run-x") is None
 
     def test_saturation_stops_on_the_measured_figure(self):
-        from src.tools import saturation as sat
 
         out = _saturation(cap=100, delivered=100)
         assert out["node_logs"][0]["input_summary"]["governor"] == "max_channels_per_run"

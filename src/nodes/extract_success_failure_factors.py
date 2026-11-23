@@ -31,13 +31,11 @@ from __future__ import annotations
 import bisect
 import json
 import time
-from typing import Any
 
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.tools.run_scope import scope_clause
 from src.tools import deadline as run_deadline
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.llm.cascade import complete_tier, estimate_cost
 from src.state import NodeLog, ErrorRecord
@@ -237,7 +235,6 @@ def extract_success_failure_factors(state: dict) -> dict:
     extracted = 0
     total_cost = 0.0
     total_eligible_seen = 0
-    from src.tools.dedup import persist_channel_v3
 
     while eligible:
         total_eligible_seen += len(eligible)

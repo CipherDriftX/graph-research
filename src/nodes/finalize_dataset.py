@@ -12,7 +12,6 @@ import json
 import time
 from datetime import datetime, timezone
 
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
 from src.state import NodeLog
 from src.tools.deliverable import eligible_sql
@@ -45,7 +44,6 @@ def finalize_dataset(state: dict) -> dict:
     thread_id = state.get("thread_id", "")
     run_id = state.get("run_id", "")
     start = time.monotonic()
-    cfg = get_config().harness
 
     def _log(input_summary: dict) -> list[dict]:
         return [NodeLog(
@@ -163,14 +161,6 @@ def finalize_dataset(state: dict) -> dict:
         # -- harness_runs update -------------------------------------------------
         cost_by_model = state.get("spend_by_model", {})
         total_cost = state.get("budget_spent_usd", 0.0)
-        seed_niches = state.get("selected_niches", []) or [state.get("selected_niche", "")]
-        config_snapshot = {
-            "profile": cfg.profile,
-            "subscriber_floor": cfg.subscriber_floor,
-            "budget_limit_usd": cfg.budget_limit_usd,
-            "max_tree_depth": cfg.max_tree_depth,
-            "max_branches": cfg.max_branches,
-        }
 
         cur.execute(
             "UPDATE harness_runs SET completed_at = %(now)s, status = %(status)s, "

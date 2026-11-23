@@ -159,7 +159,7 @@ def validate(overrides: dict[str, Any] | None) -> dict[str, str]:
         try:
             value = float(raw)
         except (TypeError, ValueError):
-            raise ValueError(f"{spec.label} must be a number.")
+            raise ValueError(f"{spec.label} must be a number.") from None
         if value < spec.minimum or value > spec.maximum:
             fmt = "{:,.0f}" if spec.kind == "int" else "{:g}"
             raise ValueError(

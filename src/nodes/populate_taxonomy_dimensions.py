@@ -10,15 +10,13 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Any
 
 from src.llm.concurrent import map_llm
 from src.llm.json_parse import complete_json
 from src.tools.run_scope import scope_clause
 from src.tools import deadline as run_deadline
-from src.config import get_config
 from src.db.connection import get_connection, put_connection
-from src.llm.cascade import complete_tier, estimate_cost
+from src.llm.cascade import complete_tier
 from src.state import NodeLog, ErrorRecord
 from src.tools.deliverable import eligible_sql
 
@@ -143,7 +141,7 @@ def populate_taxonomy_dimensions(state: dict) -> dict:
         return {"node_logs": _log({"reason": "query failed", "populated": 0})}
 
     populated = 0
-    from src.tools.dedup import persist_channel_v3, persist_channel_niche_membership
+    from src.tools.dedup import persist_channel_v3
 
     # Phase 1 -- prompts first, from the database alone, so phase 2 can
     # overlap the calls. Measured serial at 14s a channel; a 250-channel

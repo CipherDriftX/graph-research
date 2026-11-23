@@ -14,8 +14,6 @@ a splitting/stopping condition (generalised from saturation to *splitting*):
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
-
 import networkx as nx
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch

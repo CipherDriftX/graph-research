@@ -26,7 +26,7 @@ import networkx as nx
 
 from src.config import get_config
 from src.nodes.store import get_store
-from src.state import ErrorRecord, NodeLog
+from src.state import NodeLog
 from src.tools.bright_data import normalize_channel_ref
 
 
@@ -272,7 +272,6 @@ async def cluster_branch(state: dict) -> dict:
     ref_list = sorted(normalized)
 
     if len(ref_list) < cfg.min_channels_for_split:
-        max_refs = max(len(kw_refs), len(gw_refs), 0)
         return {
             "node_logs": _log({
                 "decision": "insufficient_channels",

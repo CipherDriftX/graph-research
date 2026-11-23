@@ -8,7 +8,7 @@ a LangGraph checkpoint.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from src.export import (
     _excel_safe,
@@ -36,7 +36,7 @@ class TestExcelSafe:
         assert _excel_safe(["country_code", "region"]) == "country_code; region"
 
     def test_passes_through_plain_values(self):
-        assert _excel_safe(42) is 42 or _excel_safe(42) == 42
+        assert _excel_safe(42) == 42
         assert _excel_safe(None) is None
         assert _excel_safe(True) is True
 
