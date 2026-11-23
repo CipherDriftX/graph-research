@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import time
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -111,6 +113,70 @@ def _parse_duration_seconds(iso: str) -> int | None:
     return int(match.group("h") or 0) * 3600 + int(match.group("m") or 0) * 60 + int(match.group("s") or 0)
 
 
+class YouTubeReplay:
+    """Answers Data API requests from recorded fixtures instead of the network.
+
+    Supports the calls this client makes: channels and videos by id, and
+    playlistItems for a channel's UU, UULF, UUSH and UULV playlists. Every
+    playlist fits on one page.
+    """
+
+    _PLAYLIST_PREFIXES = ("UULF", "UUSH", "UULV", "UU")
+
+    def __init__(self, fixtures_dir: Path) -> None:
+        self._channels = {c["id"]: c for c in self._load(fixtures_dir / "channels.json")}
+        videos = sorted(
+            self._load(fixtures_dir / "videos.json"),
+            key=lambda v: v["snippet"]["publishedAt"], reverse=True,
+        )
+        self._videos = {v["id"]: v for v in videos}
+
+    @staticmethod
+    def _load(path: Path) -> list[dict]:
+        if not path.exists():
+            logger.warning("youtube_replay_missing", path=str(path))
+            return []
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def get(self, endpoint: str, params: dict[str, Any]) -> dict:
+        if endpoint == "channels":
+            ids = str(params.get("id", "")).split(",")
+            return {"items": [self._channels[i] for i in ids if i in self._channels]}
+        if endpoint == "videos":
+            ids = str(params.get("id", "")).split(",")
+            return {"items": [self._video(self._videos[i]) for i in ids if i in self._videos]}
+        if endpoint == "playlistItems":
+            return self._playlist(str(params.get("playlistId", "")))
+        if endpoint == "commentThreads":
+            return {"items": []}
+        raise ValueError(f"replay has no answer for the {endpoint} endpoint")
+
+    @staticmethod
+    def _video(video: dict) -> dict:
+        return {k: v for k, v in video.items() if k != "isShort"}
+
+    def _playlist(self, playlist_id: str) -> dict:
+        prefix = next(p for p in self._PLAYLIST_PREFIXES if playlist_id.startswith(p))
+        channel_id = "UC" + playlist_id[len(prefix):]
+        keep = {
+            "UU": lambda v: True,
+            "UULF": lambda v: not v["isShort"],
+            "UUSH": lambda v: v["isShort"],
+            "UULV": lambda v: False,
+        }[prefix]
+        items = [
+            {
+                "snippet": {"publishedAt": v["snippet"]["publishedAt"],
+                            "resourceId": {"videoId": v["id"]}},
+                "contentDetails": {"videoId": v["id"],
+                                   "videoPublishedAt": v["snippet"]["publishedAt"]},
+            }
+            for v in self._videos.values()
+            if v["snippet"]["channelId"] == channel_id and keep(v)
+        ]
+        return {"items": items, "pageInfo": {"totalResults": len(items)}}
+
+
 class YouTubeAPIClient:
     BASE_URL = "https://www.googleapis.com/youtube/v3"
 
@@ -124,6 +190,9 @@ class YouTubeAPIClient:
         self._api_keys = cfg.youtube.api_keys or [cfg.youtube.api_key]
         self._key_index = 0
         self._quota_used: int = 0
+        self._replay = (
+            YouTubeReplay(Path(cfg.youtube.fixtures_dir)) if cfg.youtube.mode == "replay" else None
+        )
 
     @property
     def _api_key(self) -> str:
@@ -177,6 +246,8 @@ class YouTubeAPIClient:
 
     @_create_retry_decorator()
     def _get(self, endpoint: str, params: dict[str, Any]) -> dict:
+        if self._replay is not None:
+            return self._replay.get(endpoint, params)
         while True:
             params["key"] = self._api_key
             response = httpx.get(
@@ -701,7 +772,7 @@ class YouTubeAPIClient:
         snippet = item.get("snippet", {})
         stats = item.get("statistics", {})
         content = item.get("contentDetails", {})
-        duration_str = content.get("duration", "PT0S")
+        duration_str = content.get("duration", "")
         return {
             "video_id": item.get("id", ""),
             "channel_id": snippet.get("channelId", ""),

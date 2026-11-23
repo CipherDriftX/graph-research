@@ -54,6 +54,10 @@ class YouTubeConfig(BaseSettings):
     # pool and buys nothing — verified the hard way when a same-project
     # swap changed nothing and a different-project key worked immediately.
     fallback_api_keys: str = ""
+    # live calls the Data API. replay answers from recorded public data in
+    # fixtures_dir and needs no key.
+    mode: Literal["live", "replay"] = "live"
+    fixtures_dir: str = "fixtures/youtube"
 
     @property
     def api_keys(self) -> list[str]:
