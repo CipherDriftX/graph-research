@@ -15,12 +15,16 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import structlog
+
 from src.tools.deliverable import deliverable_floor
 from src.tools import deadline as run_deadline
 from src.tools.youtube_api import YouTubeAPIClient
 from src.tools.outlier_score import score_channel_videos
 from src.tools.dedup import persist_channel, persist_video, persist_channel_v3, persist_channel_snapshot, persist_video_v3
 from src.state import NodeLog, ErrorRecord
+
+logger = structlog.get_logger(__name__)
 
 # YouTube raised the Shorts ceiling from 60s to 3 minutes in Oct 2024.
 # Being under it is necessary but not sufficient — the upload also has to
